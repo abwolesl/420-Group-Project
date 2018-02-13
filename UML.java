@@ -716,24 +716,24 @@ public class UML extends Application {
 		TextArea ta1 = new TextArea("Default Text ta1");
 		ta1.setLayoutX(startX+1);
 		ta1.setLayoutY(startY+1);
-		ta1.setMaxHeight(ythird-2);
-		ta1.setMaxWidth(width-2);
+		ta1.setPrefHeight(ythird-2);
+		ta1.setPrefWidth(width-2);
 		//ta1.setMinHeight(37);
 		//ta1.setMinWidth(120);
 		
 		TextArea ta2 = new TextArea("Default Text ta2");
 		ta2.setLayoutX(startX+1);
 		ta2.setLayoutY(startY+ythird+1);
-		ta2.setMaxHeight(ythird-2);
-		ta2.setMaxWidth(width-2);
+		ta2.setPrefHeight(ythird-2);
+		ta2.setPrefWidth(width-2);
 		//ta2.setMinHeight(37);
 		//ta2.setMinWidth(120);
 		
 		TextArea ta3 = new TextArea("Default Text ta3");
 		ta3.setLayoutX(startX+1);
 		ta3.setLayoutY(startY+2*ythird+1);
-		ta3.setMaxHeight(ythird-2);
-		ta3.setMaxWidth(width-2);
+		ta3.setPrefHeight(ythird-2);
+		ta3.setPrefWidth(width-2);
 		//ta3.setMinHeight(37);
 		//ta3.setMinWidth(120);
 		
