@@ -516,7 +516,7 @@ public class UML extends Application {
 				startingPointX = event.getSceneX();
 				startingPointY = event.getSceneY();
 
-				if (startingPointX > 160 && startingPointX < 1390 && startingPointY > 61 && startingPointY < 690) {
+				if (startingPointX > UMLScene.getWidth()*.11 && startingPointX < UMLScene.getWidth()*.97 && startingPointY > UMLScene.getHeight()*.11 && startingPointY < UMLScene.getHeight()*.94) {
 					newDot.setCenterX(startingPointX);
 					newDot.setCenterY(startingPointY);
 					newDot.setRadius(5);
@@ -552,7 +552,7 @@ public class UML extends Application {
 				startingPointX = event.getSceneX();
 				startingPointY = event.getSceneY();
 
-				if (startingPointX > 160 && startingPointX < 1390 && startingPointY > 61 && startingPointY < 690) {
+				if (startingPointX > UMLScene.getWidth()*.11 && startingPointX < UMLScene.getWidth()*.97 && startingPointY > UMLScene.getHeight()*.11 && startingPointY < UMLScene.getHeight()*.94) {
 
 					newTextField.setTranslateX(startingPointX);
 					newTextField.setTranslateY(startingPointY);
