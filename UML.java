@@ -22,6 +22,7 @@ import javafx.scene.layout.HBox;
 //import javafx.scene.layout.Priority;
 //import javafx.scene.shape.Polygon;
 //import javafx.scene.shape.Polyline;
+//import javafx.scene.shape.Path;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -34,7 +35,6 @@ import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.scene.control.TextArea;
-import javafx.scene.shape.Path;
 
 public class UML extends Application {
 
@@ -52,15 +52,9 @@ public class UML extends Application {
 	TextArea newTextField = null;
 	boolean isTextFieldBeingDrawn = false;
 	
-	Path newClassBox = null;
-	boolean isClassBoxBeingDrawn = false;
-	
-	double startX = 0;
-	double startY = 0;
-	double endX = 0;
-	double endY = 0;
 	double width = 0;
 	double height = 0;
+	
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -516,7 +510,7 @@ public class UML extends Application {
 				startingPointX = event.getSceneX();
 				startingPointY = event.getSceneY();
 
-				if (startingPointX > UMLScene.getWidth()*.11 && startingPointX < UMLScene.getWidth()*.97 && startingPointY > UMLScene.getHeight()*.11 && startingPointY < UMLScene.getHeight()*.94) {
+				if (startingPointX > 160 && startingPointX < 1390 && startingPointY > 61 && startingPointY < 690) {
 					newDot.setCenterX(startingPointX);
 					newDot.setCenterY(startingPointY);
 					newDot.setRadius(5);
@@ -552,7 +546,7 @@ public class UML extends Application {
 				startingPointX = event.getSceneX();
 				startingPointY = event.getSceneY();
 
-				if (startingPointX > UMLScene.getWidth()*.11 && startingPointX < UMLScene.getWidth()*.97 && startingPointY > UMLScene.getHeight()*.11 && startingPointY < UMLScene.getHeight()*.94) {
+				if (startingPointX > 160 && startingPointX < 1390 && startingPointY > 61 && startingPointY < 690) {
 
 					newTextField.setTranslateX(startingPointX);
 					newTextField.setTranslateY(startingPointY);
@@ -641,8 +635,9 @@ public class UML extends Application {
 				UMLScene.setOnMouseReleased((MouseEvent event) -> {
 					if (isBoxBeingDrawn == true) {
 						
-						Rectangle[] recs = createBoxes(UMLScene,group,startingPointX,startingPointY,width,height);
-						TextArea[] tas = createTextAreas(UMLScene, group, startingPointX, startingPointY, width, height);
+						
+						Rectangle[] recs = createBoxes(startingPointX,startingPointY,width,height);
+						TextArea[] tas = createTextAreas(startingPointX, startingPointY, width, height);
 						group.getChildren().addAll(recs);
 						group.getChildren().addAll(tas);
 						
@@ -656,7 +651,7 @@ public class UML extends Application {
 		
 	}
 	
-	private TextArea[] createTextAreas(Scene fxScene, Group g, double startX, double startY, double width, double height)
+	private TextArea[] createTextAreas(double startX, double startY, double width, double height)
 	{
 		//Same logic as createBoxes... consolidate? 
 		if (width < -1){
@@ -705,7 +700,7 @@ public class UML extends Application {
 	}
 	
 	
-	private Rectangle[] createBoxes(Scene fxScene, Group g,double startX, double startY, double width, double height)
+	private Rectangle[] createBoxes(double startX, double startY, double width, double height)
 	{
 		
 		//If drawn up and/or left, reverse start + end to compensate. 
