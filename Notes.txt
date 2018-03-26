@@ -1,0 +1,20 @@
+﻿Test.java
+	+ Driver program for generalization.java class.
+	+ Able to input value(s) and then press button to change generalizations start/end x/y.
+	+ Figured this was a good first step to be able to resize objects. Maybe put a bar on the right side to input these?
+
+UML.java
+	+ The furthest I got from last iteration, without the rollbacks.
+	+ Includes methods for different relationships.
+	+ lineOptions() now calls drawLine() with a parameter that says which option was selected. drawLine() has switch statement to pick method to call based on option parameter.
+	! Need to bump out the relationships and class boxes to own Java classes.
+
+UMLTest.java
+	+ Same as UML.java, except now calls generalization.java's constructor + methods when generalization option is picked.
+
+Generalization.java
+	+ Class for the generalization relationship. Rudimentary, may need to be fleshed out more, but for now works pretty well.
+
+
+
+I couldn’t figure out how to make an object clickable and then gain focus to work with it. Probably a good thing to have eventually. 
