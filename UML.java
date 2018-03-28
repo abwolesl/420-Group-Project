@@ -1,11 +1,15 @@
 // swetr iteration 2
 
+import java.util.ArrayList;
+
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -132,9 +136,7 @@ public class UML extends Application {
 		});
 	}
 	
-	// press this button before clicking on a class box so prepared to store mouse click values
-	// those values will be compared against the existing class boxes to see which
-	// one the user is clicking on
+	// press this button before clicking on node so prepared for mouse clicks
 	private void editButton (VBox optionsVBox, Scene drawingScene, Group group) {
 		Button editButton = new Button("Edit");
 		
@@ -143,12 +145,39 @@ public class UML extends Application {
 		// Handle event
 		editButton.setOnAction((event) -> {
 			drawingScene.setOnMousePressed((MouseEvent drawingEvent) -> {
-				double clickX = drawingEvent.getSceneX();
-				double clickY = drawingEvent.getSceneY();
-				// if X or Y is on any part of object in existing scene, should be able to move it
-				System.out.println(ClassBox.checkCoordinates(clickX, clickY));
+				ArrayList<Node> nodes = new ArrayList<Node>();
+				nodes = getAllNodes(group);
+				for (Node node : nodes ) {
+					//System.out.println(node);
+					node.setOnMouseClicked((eventClicked) -> {
+						System.out.println(node);
+					});
+					
+					node.setOnMouseDragged((eventDragged) -> {
+						node.setTranslateX(eventDragged.getSceneX());
+						node.setTranslateY(eventDragged.getSceneY());
+					});
+				}
 			});
 		});
+	}
+	
+	// get all nodes of parent (in our case, group)
+	// JavaFX is hierarchal, so able to get all children (nodes)
+	// of the group
+	public static ArrayList<Node> getAllNodes(Parent root) {
+	    ArrayList<Node> nodes = new ArrayList<Node>();
+	    addAllDescendents(root, nodes);
+	    return nodes;
+	}
+
+	private static void addAllDescendents(Parent parent, ArrayList<Node> nodes) {
+	    for (Node node : parent.getChildrenUnmodifiable()) {
+	        nodes.add(node);
+	        if (node instanceof Parent) {
+	            addAllDescendents((Parent)node, nodes);
+	        }
+	    }
 	}
 
 	private void createButtons(HBox buttonsHBox, Stage UMLStage) {

@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.TextArea;
@@ -17,9 +16,6 @@ public class ClassBox {
 	private static double endY = 0;
 	private static double width = 0;
 	private static double height = 0;
-	
-	// arraylist of arrays. The arrays within the arraylist contain unique info about each class box (x and y coords)
-	private static ArrayList<double[]> classBoxes = new ArrayList<double[]>();
 	
 	public static void drawClassBox(Scene UMLScene, Group group) {
 		
@@ -117,14 +113,6 @@ public class ClassBox {
 				}
 				UML.setUserClicked(false);
 			}
-			
-			// add class box to arraylist of all class boxes
-			double[] newClassBox = new double[4];
-			newClassBox[0] = startX;
-			newClassBox[1] = startY;
-			newClassBox[2] = endX;
-			newClassBox[3] = endY;
-			classBoxes.add(newClassBox);
 		});
 	}
 
@@ -263,27 +251,5 @@ public class ClassBox {
 	
 	public static double getEndY () {
 		return endY;
-	}
-	
-	// move the class boxes
-	// returns element index that matches the box to be moved
-	// returns -1 if not found
-	// this works, but you really have to click like exactly on the box's line for this to work
-	// should adjust so if you click + or - like 5 pixels from the x or the y then it should recognize
-	public static int checkCoordinates (double x, double y) {
-		for (int i = 0; i < classBoxes.size(); ++i) {
-			double[] element = new double[4];
-			element = classBoxes.get(i);
-			//System.out.println(element[0]);
-			// startX or endX
-			if (x == element[0] || x == element[0] + 1 || x == element[0] + 2 || x == element[2] || x == element[2] + 1 || x == element[2] + 2) {
-				return i;
-			}  // could be combined with above, I separated it for testing and so it was easier to read
-			else if (y == element[1] || y == element[1] + 1 || y == element[1] + 2 || y == element[3] || y == element[3] + 1 || y == element[3] + 2) {
-				return i;
-			}
-		}
-		
-		return -1;
 	}
 }
