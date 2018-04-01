@@ -1,124 +1,68 @@
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.control.TextArea;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
+
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseDragEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.control.TextArea;
+import javafx.scene.paint.Color;
+import javafx.scene.Group;
+import javafx.scene.shape.Shape;
+import javafx.scene.layout.VBox;
 
 public class ClassBox {
 
-	private static Rectangle newBox = null;
-	private static boolean isBoxBeingDrawn = false;
-
-	private static double startX = 0;
-	private static double startY = 0;
-	private static double endX = 0;
-	private static double endY = 0;
-	private static double width = 0;
-	private static double height = 0;
+	 private double startX, startY, width, height;
+	 private Rectangle dragArea;
+	 private Rectangle rTop, rMid, rBot;
+	 private TextArea tTop, tMid, tBot;
+	 private Rectangle resizeArea;
 	
-	public static void drawClassBox(Scene UMLScene, Group group) {
+	//Constructor..Sets coordinate fields, makes the models for Rectangles, TextAreas, dragArea, & resizeArea
+	//Empty constructor, currently called by UML.java to just place one on the screen. 
+	public ClassBox() {
 		
-		UMLScene.setOnMousePressed((MouseEvent event) -> {
-			if (UML.getUserClicked()) {
-				if (isBoxBeingDrawn == false) {
-					// get x and y coordinates of the mouse press
-					startX = event.getSceneX();
-					startY = event.getSceneY();
-					if (startX > UMLScene.getWidth() * .11 && startX < UMLScene.getWidth() * .97
-							&& startY > UMLScene.getHeight() * .11 && startY < UMLScene.getHeight() * .94) {
-						newBox = new Rectangle();
-						newBox.setFill(Color.LIGHTGRAY);
-						newBox.setStroke(Color.BLACK);
-						group.getChildren().add(newBox);
-						isBoxBeingDrawn = true;
-					}
-				}
-			}
-		});
-
-		// while user is dragging box, dimensions change
-		UMLScene.setOnMouseDragged((MouseEvent event) -> {
-			if (UML.getUserClicked()) {
-				if (isBoxBeingDrawn == true) {
-					endX = event.getSceneX();
-					endY = event.getSceneY();
-	
-					if (endX < UMLScene.getWidth() * .11) { // left side of gray area
-						endX = UMLScene.getWidth() * .11;
-					}
-					if (endX > UMLScene.getWidth() * .97) { // right side of gray area
-						endX = UMLScene.getWidth() * .97;
-					}
-					if (endY < UMLScene.getHeight() * .11) { // top of gray area
-						endY = UMLScene.getHeight() * .11;
-					}
-					if (endY > UMLScene.getHeight() * .94) { // bottom of gray area
-						endY = UMLScene.getHeight() * .94;
-					}
-	
-					width = endX - startX;
-					height = endY - startY;
-	
-					newBox.setX(startX);
-					newBox.setY(startY);
-					newBox.setWidth(width);
-					newBox.setHeight(height);
-	
-					// these make it so user can still draw rectangle if width and height are
-					// negative. Just makes those positive
-					if (newBox.getWidth() < 0) {
-						newBox.setWidth(-newBox.getWidth());
-						newBox.setX(newBox.getX() - newBox.getWidth());
-					}
-	
-					if (newBox.getHeight() < 0) {
-						newBox.setHeight(-newBox.getHeight());
-						newBox.setY(newBox.getY() - newBox.getHeight());
-					}
-	
-				}
-			}
-		});
+		this.startX = 200;
+		this.startY = 200;
+		this.width = 130;
+		this.height = 130;
 		
-		// user finished drawing box, reset variables
-		UMLScene.setOnMouseReleased((MouseEvent event) -> {
-			if(UML.getUserClicked()) {
-				if (isBoxBeingDrawn == true) {
-					Rectangle[] recs = createBoxes(UMLScene, group, startX, startY, width, height);
-					Rectangle r1 = recs[0];
-					Rectangle r2 = recs[1];
-					Rectangle r3 = recs[2];
-					/// r1.setVisible(true);
-					// r2.setVisible(true);
-					// r3.setVisible(true);
-					group.getChildren().addAll(r1, r2, r3);
-					TextArea[] tas = createTextAreas(UMLScene, group, startX, startY, width, height);
-					TextArea ta1 = tas[0];
-					TextArea ta2 = tas[1];
-					TextArea ta3 = tas[2];
-					// ta1.setVisible(true);
-					// ta2.setVisible(true);
-					// ta3.setVisible(true);
-					group.getChildren().addAll(ta1, ta2, ta3);
-					// System.out.println("rectangle height = " + r1.getHeight());
-					// System.out.println("rectnagle width = " + r1.getWidth());
-					// System.out.println("ta maxheight = " + ta1.getMaxHeight() + " ta height =" +
-					// ta1.getHeight());
-					// System.out.println("ta maxwidth = " + ta1.getMaxWidth() + " ta width = " +
-					// ta1.getWidth() );
-	
-					// newBox = null;
-					isBoxBeingDrawn = false;
-				}
-				UML.setUserClicked(false);
-			}
-		});
+		updatedragArea();
+		updateResizeArea();
+		updateBoxes(startX, startY, width, height);
+		updateTextAreas(startX, startY, width, height);
+		makeResizable();
+		makeDraggable();
+		
 	}
-
-	private static Rectangle[] createBoxes(Scene fxScene, Group g, double startX, double startY, double width,
-			double height) {
-		// If drawn up and/or left, reverse start + end to compensate.
+	
+	//Constructor..Sets coordinate fields, makes the models for Rectangles, TextAreas, dragArea, & resizeArea
+	public ClassBox(double startX, double startY, double width, double height){
+		
+		this.startX = startX;
+		this.startY = startY;
+		this.width = width;
+		this.height = height;
+		this.dragArea = new Rectangle(startX, startY, width, height);
+		dragArea.setStrokeWidth(2);
+		dragArea.setStroke(Color.RED);
+		dragArea.setFill(Color.TRANSPARENT);
+		updateBoxes(this.startX, this.startY, this.width, height);
+		updateTextAreas(this.startX, this.startY, this.width, height);
+		
+		updatedragArea();
+		updateResizeArea();
+		makeResizable();
+		makeDraggable();
+	}
+	
+	//Method to update Rectangles within ClassBox.
+	//Called whenever the model needs to be updated, like when it's dragged or resized. 
+	//Also gets called when ClassBox is created. 
+	private void updateBoxes(double startX, double startY, double width, double height) {
+		
+		// Rectangle(startX, startY, width, height)GUI
+		
 		if (width < -1) {
 			width = -width;
 			startX = startX - width;
@@ -130,53 +74,56 @@ public class ClassBox {
 
 		// Set Min height + width
 		if (height < 120) {
-			height = 120;
+			height = 130;
 		}
 		if (width < 130) {
 			width = 130;
 		}
 		// Each section of box is a third.
-		double ythird = height / 3;
+		double ythird = height / 3.0;
+		
+		
+		if (rTop == null) {
+			rTop = new Rectangle(startX, startY, width, ythird);
+			rTop.setFill(Color.WHITE);
+			rTop.setStroke(Color.BLACK);
+			rTop.setStrokeWidth(2);
+		}
+		rTop.setX(startX);
+		rTop.setY(startY);
+		rTop.setWidth(width);
+		rTop.setHeight(ythird);
+		
+		if (rMid == null) {
+			rMid = new Rectangle(startX, startY + ythird, width, ythird);
+			rMid.setFill(Color.WHITE);
+			rMid.setStroke(Color.BLACK);
+			rMid.setStrokeWidth(2);
+		}
+		rMid.setX(startX);
+		rMid.setY(startY + ythird);
+		rMid.setWidth(width);
+		rMid.setHeight(ythird);
 
-		// Rectangle(startX, startY, width, height)
-		Rectangle r1 = new Rectangle(startX, startY, width, ythird);
-		r1.setX(startX);
-		r1.setY(startY);
-		r1.setFill(Color.WHITE);
-		r1.setStroke(Color.BLACK);
-		r1.setStrokeWidth(2);
-
-		Rectangle r2 = new Rectangle(startX, startY + ythird, width, ythird);
-		r2.setX(startX);
-		r2.setY(startY + ythird);
-		r2.setFill(Color.WHITE);
-		r2.setStroke(Color.BLACK);
-		r2.setStrokeWidth(2);
-
-		Rectangle r3 = new Rectangle(startX, startY + 2 * ythird, width, ythird);
-		r3.setX(startX);
-		r3.setY(startY + 2 * ythird);
-		r3.setFill(Color.WHITE);
-		r3.setStroke(Color.BLACK);
-		r3.setStrokeWidth(2);
-
-		Rectangle[] recs = new Rectangle[3];
-		/// r1.setVisible(false);
-		/// r2.setVisible(false);
-		/// r3.setVisible(false);
-
-		// System.out.println("r1 Width = " + r1.getWidth());
-		// System.out.println("r1 Height = " + r1.getHeight());
-		recs[0] = r1;
-		recs[1] = r2;
-		recs[2] = r3;
-
-		return recs;
+		if (rBot == null) {
+			rBot = new Rectangle(startX, startY + 2 * ythird, width, ythird);
+			rBot.setFill(Color.WHITE);
+			rBot.setStroke(Color.BLACK);
+			rBot.setStrokeWidth(2);
+		}
+		rBot.setX(startX);
+		rBot.setY(startY + 2 * ythird);
+		rBot.setWidth(width);
+		rBot.setHeight(ythird);
+		
 	}
-
-	private static TextArea[] createTextAreas(Scene fxScene, Group g, double startX, double startY, double width,
+	
+	//Method to update TextAreas within ClassBox.
+	//Called whenever the model needs to be updated, like when it's dragged or resized. 
+	//Also gets called when ClassBox is created. 
+	private void updateTextAreas(double startX, double startY, double width,
 			double height) {
-		// Same logic as createBoxes
+		
 		if (width < -1) {
 			width = -width;
 			startX = startX - width;
@@ -186,70 +133,225 @@ public class ClassBox {
 			startY = startY - height;
 		}
 
+		// Set Min height + width
 		if (height < 120) {
-			height = 120;
+			height = 130;
 		}
 		if (width < 130) {
 			width = 130;
 		}
-
+		// Each section of box is a third.
 		double ythird = height / 3.0;
+		if (tTop == null) {
+			tTop = new TextArea(); 
+		}
+		tTop.setLayoutX(startX + 1);
+		tTop.setLayoutY(startY + 1);
+		tTop.setPrefHeight(ythird - 2);
+		tTop.setPrefWidth(width - 2);
+		
+		if (tMid == null) {
+			tMid = new TextArea(); 
+		}
+		tMid.setLayoutX(startX + 1);
+		tMid.setLayoutY(startY + ythird + 1);
+		tMid.setPrefHeight(ythird - 2);
+		tMid.setPrefWidth(width - 2);
 
-		TextArea ta1 = new TextArea("Default Text ta1");
-		ta1.setLayoutX(startX + 1);
-		ta1.setLayoutY(startY + 1);
-		ta1.setPrefHeight(ythird - 2);
-		ta1.setPrefWidth(width - 2);
-		// ta1.setMinHeight(37);
-		// ta1.setMinWidth(120);
-
-		TextArea ta2 = new TextArea("Default Text ta2");
-		ta2.setLayoutX(startX + 1);
-		ta2.setLayoutY(startY + ythird + 1);
-		ta2.setPrefHeight(ythird - 2);
-		ta2.setPrefWidth(width - 2);
-		// ta2.setMinHeight(37);
-		// ta2.setMinWidth(120);
-
-		TextArea ta3 = new TextArea("Default Text ta3");
-		ta3.setLayoutX(startX + 1);
-		ta3.setLayoutY(startY + 2 * ythird + 1);
-		ta3.setPrefHeight(ythird - 2);
-		ta3.setPrefWidth(width - 2);
-		// ta3.setMinHeight(37);
-		// ta3.setMinWidth(120);
-
-		// ta1.setVisible(false);
-		// ta2.setVisible(false);
-		// ta3.setVisible(false);
-
-		// System.out.println(ta1.getMaxWidth());
-
-		// System.out.println("ta height =" + ta1.getMaxHeight());
-		// System.out.println("ta width = " + ta1.getMaxWidth());
-
-		TextArea[] tas = new TextArea[3];
-		tas[0] = ta1;
-		tas[1] = ta2;
-		tas[2] = ta3;
-		return tas;
+		if (tBot == null) {
+			tBot = new TextArea(); 
+		}
+		tBot.setLayoutX(startX + 1);
+		tBot.setLayoutY(startY + 2 * ythird + 1);
+		tBot.setPrefHeight(ythird - 2);
+		tBot.setPrefWidth(width - 2);
 	}
 	
-	// need getters
 	
-	public static double getStartX () {
-		return startX;
+	//Draws the ClassBox inside the group. 
+	//This is the round-about way that I'm drawing the ClassBox, but it works.
+	public void drawMe(Group g){
+		g.getChildren().addAll(dragArea, resizeArea, rTop,rMid,rBot,tTop,tMid,tBot);
+		//g.getChildren().addAll(resizeArea, rTop,rMid,rBot,tTop,tMid,tBot);
+		//UML.setUserClicked(false);
+		
 	}
 	
-	public static double getStartY () {
-		return startY;
+	//Getter X value of Top left coordinate
+	public double getStartX() {
+		return this.startX;
 	}
 	
-	public static double getEndX () {
-		return endX;
+	//Getter Y value of Top left coordinate
+	public double getStartY() {
+		return this.startY;
 	}
 	
-	public static double getEndY () {
-		return endY;
+	//Helper function for makeDraggable
+	public void setStartX(double x) {
+		this.startX = x;
+		updateBoxes(x, startY, width, height);
+		updateTextAreas(x,startY, width, height);
 	}
+	
+	//Helper function for makeDraggable
+	public void setStartY(double y) {
+		this.startY = y;
+		updateBoxes(startX, y, width, height);
+		updateTextAreas(startX, y, width, height);
+	}
+	
+	//Helper function for makeResizable
+	//Does the box logic that happens a lot to ensure minimum size, correct orientation.
+	//Maybe integrate with setEndY
+	public void setEndX(double x) {
+		width = x - startX;
+		
+		if (width < -1) {
+			this.width = -width;
+			this.startX = startX - width;
+		}
+		if (width < 130) {
+			this.width = 130;
+		}
+		//
+		updateBoxes(startX, startY, width, height);
+		updateTextAreas(startX, startY, width, height);
+	}
+	
+	//Helper function for makeResizable
+	//Does the box logic that happens a lot to ensure minimum size, correct orientation.
+	//Maybe integrate with setEndX
+	public void setEndY(double y) {
+		height = y - startY;
+		
+		if (height < -1) {
+			height = -height;
+			startY = startY - height;
+		}
+		if (height < 120) {
+			height = 130;
+		}
+		
+		updateBoxes(startX, startY, width, height);
+		updateTextAreas(startX, startY, width, height);
+	}
+	
+	//Creates mouse listener for dragArea (Red outline around ClassBox)
+	private void makeDraggable(){
+		this.dragArea.setOnMouseDragged(eventDragged -> {
+			dragArea.setStroke(Color.RED);
+			resizeArea.setFill(Color.GREEN);
+			this.setStartX(checkBoundsX(eventDragged.getSceneX(),dragArea));
+			this.setStartY(checkBoundsY(eventDragged.getSceneY(),dragArea));
+			updatedragArea();
+			updateResizeArea();
+			eventDragged.consume();
+		});
+	}
+	
+	//Creates mouse listener for resizeArea (Green square @ bottom right)
+	private void makeResizable(){
+		
+		this.resizeArea.setOnMouseDragged(eventDragged -> {
+			dragArea.setStroke(Color.RED);
+			resizeArea.setFill(Color.GREEN);
+			this.setEndX(checkBoundsX(eventDragged.getSceneX(),resizeArea));
+			this.setEndY(checkBoundsY(eventDragged.getSceneY(),resizeArea));
+			updatedragArea();
+			updateResizeArea();
+			eventDragged.consume();
+		});
+	}
+	
+	//Updates resizeArea to match ClassBox location.
+	private void updateResizeArea() {
+		
+		if(resizeArea == null) {
+			this.resizeArea = new Rectangle(startX + width, startY + height, 7.5, 7.5);
+			resizeArea.setFill(Color.GREEN);
+			resizeArea.setOpacity(50);
+		}
+		resizeArea.setX(startX + width);
+		resizeArea.setY(startY + height);
+	}
+	
+	//Updates dragArea to match ClassBox location.
+	private void updatedragArea(){
+		if (this.dragArea == null)
+		{
+			this.dragArea =  new Rectangle(startX-7.5, startY-7.5, width+15, height+15);
+			dragArea.setStroke(Color.RED);
+			dragArea.setFill(Color.TRANSPARENT);
+			dragToggle();
+		}
+		dragArea.setX(this.startX - 7.5);
+		dragArea.setY(this.startY - 7.5);
+		dragArea.setHeight(this.height + 15);
+		dragArea.setWidth(this.width + 15);	
+	}
+	
+	//Bounds checking for X parameter for dragging and Resizing.
+	//Logic differentiates between dragging and resizing, since you can drag from anywhere, but only resize from bottom right.
+	private double checkBoundsX(double x, Rectangle r) {
+		if (x < UML.drawingBox.getBoundsInParent().getMinX() + 7.5) { // left side of gray area
+			x = UML.drawingBox.getBoundsInParent().getMinX() + 7.5;
+		}
+		if (r.equals(resizeArea)){
+			if (x > UML.drawingBox.getBoundsInParent().getMaxX() - 7.5) {
+				x = UML.drawingBox.getBoundsInParent().getMaxX() - 7.5;
+			}
+		}
+		else {
+			if (x + this.width > UML.drawingBox.getBoundsInParent().getMaxX() - 7.5) { // right side of gray area
+				x = UML.drawingBox.getBoundsInParent().getMaxX() - 7.5 - this.width;
+			}
+		}
+		
+		return x;
+	}
+	
+	//Bounds checking for Y parameter for dragging and Resizing.
+	//Logic differentiates between dragging and resizing, since you can drag from anywhere, but only resize from bottom right.
+	private double checkBoundsY(double y, Rectangle r) {
+		if (y < UML.drawingBox.getBoundsInParent().getMinY() + 7.5) { // top of gray area
+			y = UML.drawingBox.getBoundsInParent().getMinY() + 7.5;
+		}
+		
+		if (r.equals(resizeArea)){
+			if (y > UML.drawingBox.getBoundsInParent().getMaxY() - 7.5) {
+				y = UML.drawingBox.getBoundsInParent().getMaxY() - 7.5;
+			}
+		}
+		else {
+			if (y + this.height > UML.drawingBox.getBoundsInParent().getMaxY() - 7.5) { // right side of gray area
+				y = UML.drawingBox.getBoundsInParent().getMaxY() - 7.5 - this.height;				}
+		}
+		
+		return y;
+	}
+	
+	//Toggles visibility of dragArea and resizeArea by setting their colors.
+	//Setting .isVisible(false) doesn't allow setOnMouseEntered to activate, I think the object isn't there anymore.
+	private void dragToggle() {
+		
+		this.dragArea.setOnMouseExited(eventExited -> {
+			resizeArea.setFill(Color.TRANSPARENT);
+			dragArea.setStroke(Color.TRANSPARENT);
+			
+			this.resizeArea.setOnMouseEntered(eventEntered -> {
+				resizeArea.setFill(Color.GREEN);
+				dragArea.setStroke(Color.RED);
+			});
+		});
+		
+		this.dragArea.setOnMouseEntered(eventEntered -> {
+			resizeArea.setFill(Color.GREEN);
+			dragArea.setStroke(Color.RED);
+		});
+		
+		
+	}
+	
+	
 }

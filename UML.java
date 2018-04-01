@@ -30,6 +30,7 @@ public class UML extends Application {
 
 	TextArea newTextField = null;
 	boolean isTextFieldBeingDrawn = false;
+	public static VBox drawingBox;
 	
 	static boolean userClicked = false;
 		
@@ -71,7 +72,7 @@ public class UML extends Application {
 		createUMLButtons(optionsVBox, UMLScene, group);
 		createTopButtons(buttonsHBox, UMLStage);
 
-		VBox drawingBox = new VBox();
+		drawingBox = new VBox();
 		// hexadecimal for light gray
 		drawingBox.setStyle("-fx-background-color: #D3D3D3;");
 		drawingBox.prefWidthProperty().bind(UMLStage.widthProperty().multiply(0.88));
@@ -117,8 +118,7 @@ public class UML extends Application {
 
 		// Handle event
 		classBox.setOnAction((event) -> {
-			setUserClicked(true);
-			ClassBox.drawClassBox(drawingScene, group);
+			new ClassBox().drawMe(group);
 		});
 		
 		// add text or note
@@ -129,7 +129,7 @@ public class UML extends Application {
 			setUserClicked(true);
 			drawTextField(drawingScene, group);
 		});
-		
+		/*
 		// press this button before clicking on node so prepared for mouse clicks
 		Button edit = new Button("Edit");
 		
@@ -172,8 +172,8 @@ public class UML extends Application {
 				});
 			}
 		});
-		
-		optionsVBox.getChildren().addAll(classBox, aggregation, composition, generalization, dependency, addText, edit, delete);
+		*/
+		optionsVBox.getChildren().addAll(classBox, aggregation, composition, generalization, dependency, addText);
 	}
 	
 	// get all nodes of parent (in our case, group)
