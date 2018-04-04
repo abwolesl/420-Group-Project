@@ -106,6 +106,10 @@ public class UML extends Application {
 				setUserClicked(true);
 				String option = b.getText();
 				Relationship newRelationship = new Relationship(drawingScene, group, option);
+				//newRelationship.setScene(drawingScene, group);
+				// Relation.getRelationship() returns the relationship
+				// then draw it doing
+				// group.getChildren().add(relationship);
 			});
 		}
 
@@ -313,6 +317,7 @@ public class UML extends Application {
 		exitWarningStage.show();
 
 		Text warningMessage = new Text();
+		// should eventually change this styling with CSS
 		warningMessage.setText(
 				"\t \t \t WARNING! \n \n Be sure to save your work before exiting. \n Any unsaved work will be deleted.");
 

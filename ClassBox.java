@@ -12,7 +12,9 @@ import javafx.scene.layout.VBox;
 
 public class ClassBox {
 
-	 private double startX, startY, width, height;
+	 private double startX, startY;
+	 private static double width;
+	 private static double height;
 	 private Rectangle dragArea;
 	 private Rectangle rTop, rMid, rBot;
 	 private TextArea tTop, tMid, tBot;
@@ -21,7 +23,7 @@ public class ClassBox {
 	//Constructor..Sets coordinate fields, makes the models for Rectangles, TextAreas, dragArea, & resizeArea
 	//Empty constructor, currently called by UML.java to just place one on the screen. 
 	public ClassBox() {
-		
+
 		this.startX = 200;
 		this.startY = 200;
 		this.width = 130;
@@ -59,63 +61,67 @@ public class ClassBox {
 	//Method to update Rectangles within ClassBox.
 	//Called whenever the model needs to be updated, like when it's dragged or resized. 
 	//Also gets called when ClassBox is created. 
-	private void updateBoxes(double startX, double startY, double width, double height) {
+	void updateBoxes(double startX, double startY, double width, double height) {
 		
 		// Rectangle(startX, startY, width, height)GUI
 		
+		this.startX = startX;
+		this.startY = startY;
+		this.width = width;
+		this.height = height;
+		
 		if (width < -1) {
-			width = -width;
-			startX = startX - width;
+			this.width = -width;
+			this.startX = startX - width;
 		}
 		if (height < -1) {
-			height = -height;
-			startY = startY - height;
+			this.height = -height;
+			this.startY = startY - height;
 		}
 
 		// Set Min height + width
 		if (height < 120) {
-			height = 130;
+			this.height = 130;
 		}
 		if (width < 130) {
-			width = 130;
+			this.width = 130;
 		}
 		// Each section of box is a third.
-		double ythird = height / 3.0;
+		double ythird = this.height / 3.0;
 		
 		
 		if (rTop == null) {
-			rTop = new Rectangle(startX, startY, width, ythird);
+			rTop = new Rectangle(this.startX, this.startY, this.width, ythird);
 			rTop.setFill(Color.WHITE);
 			rTop.setStroke(Color.BLACK);
 			rTop.setStrokeWidth(2);
 		}
-		rTop.setX(startX);
-		rTop.setY(startY);
-		rTop.setWidth(width);
+		rTop.setX(this.startX);
+		rTop.setY(this.startY);
+		rTop.setWidth(this.width);
 		rTop.setHeight(ythird);
 		
 		if (rMid == null) {
-			rMid = new Rectangle(startX, startY + ythird, width, ythird);
+			rMid = new Rectangle(this.startX, this.startY + ythird, this.width, ythird);
 			rMid.setFill(Color.WHITE);
 			rMid.setStroke(Color.BLACK);
 			rMid.setStrokeWidth(2);
 		}
-		rMid.setX(startX);
-		rMid.setY(startY + ythird);
-		rMid.setWidth(width);
+		rMid.setX(this.startX);
+		rMid.setY(this.startY + ythird);
+		rMid.setWidth(this.width);
 		rMid.setHeight(ythird);
 
 		if (rBot == null) {
-			rBot = new Rectangle(startX, startY + 2 * ythird, width, ythird);
+			rBot = new Rectangle(this.startX, this.startY + 2 * ythird, this.width, ythird);
 			rBot.setFill(Color.WHITE);
 			rBot.setStroke(Color.BLACK);
 			rBot.setStrokeWidth(2);
 		}
-		rBot.setX(startX);
-		rBot.setY(startY + 2 * ythird);
-		rBot.setWidth(width);
+		rBot.setX(this.startX);
+		rBot.setY(this.startY + 2 * ythird);
+		rBot.setWidth(this.width);
 		rBot.setHeight(ythird);
-		
 	}
 	
 	//Method to update TextAreas within ClassBox.
@@ -351,6 +357,18 @@ public class ClassBox {
 		});
 		
 		
+	}
+	
+	public static double getHeight() {
+		return height;
+	}
+	
+	public static double getWidth() {
+		return width;
+	}
+	
+	public static String getText(TextArea t) {
+		return t.getText();
 	}
 	
 	

@@ -1,29 +1,30 @@
+
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
-import javafx.scene.shape.Path;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 
-public class Relationship {
+public class Relationship extends Line {
 	
 	private static double startingPointX, startingPointY, currentEndingPointX, currentEndingPointY;
 
 	private static Line newLine = null;
 	private static boolean isLineBeingDrawn = false;
 	
-	// empty ctor
-	public Relationship () {
-		
-	}
+	private static String relType = "";
 	
-	// idea is to create a relationship object
+	private static double startXValue;
+	private static double startYValue;
+	private static double endXValue;
+	private static double endYValue;
+
 	public Relationship (Scene UMLScene, Group group, String relationshipType) {
 		
+		relType = relationshipType;
 		drawLine(UMLScene, group, relationshipType);
 	}
 	
@@ -88,23 +89,23 @@ public class Relationship {
 					
 					switch (option){
 						case "Aggregation":
-							drawWD(UMLScene,group,startingPointX,startingPointY,currentEndingPointX,currentEndingPointY);
+							drawAggregationOrComposition(group, startingPointX,startingPointY,currentEndingPointX,currentEndingPointY,"White");
 							newLine.setVisible(false);
 							break;
 						case "Composition":
-							drawBD(UMLScene,group,startingPointX,startingPointY,currentEndingPointX,currentEndingPointY);
+							drawAggregationOrComposition(group, startingPointX,startingPointY,currentEndingPointX,currentEndingPointY,"Black");
 							newLine.setVisible(false);
 							break;
 						case "Generalization":
-							drawTriangle(UMLScene,group,startingPointX,startingPointY,currentEndingPointX,currentEndingPointY);
+							drawGeneralization(group, startingPointX,startingPointY,currentEndingPointX,currentEndingPointY);
 							newLine.setVisible(false);
 							break;
 						case "Dependency":
-							drawDependency(UMLScene, group, startingPointX, startingPointY, currentEndingPointX, currentEndingPointY);
+							drawDependency(group, startingPointX, startingPointY, currentEndingPointX, currentEndingPointY);
 							newLine.setVisible(false);
 							break;
 					}
-					newLine = null;
+					//newLine = null;
 					isLineBeingDrawn = false;
 				}
 				UML.setUserClicked(false);
@@ -112,63 +113,18 @@ public class Relationship {
 		});
 	}
 	
-	private static void drawWD(Scene fxScene, Group g, double startX, double startY, double endX, double endY) {
+	// Draw aggregation or composition line
+	// Logic for both lines is identical, only difference is the fill of the arrowhead (diamond)
+	// This color is passed as a parameter
+	static void drawAggregationOrComposition(Group group, double startX, double startY, double endX, double endY, String color) {
 		
-		// Used to combine shapes
-		Path aggregation = new Path();
-
-		double height = endY - startY;
-		double width = endX - startX;
-		double slope = height/width;
+		startXValue = startX;
+		startYValue = startY;
+		endXValue = endX;
+		endYValue = endY;
 		
-		//Diving by 0 is bad
-		slope = (slope == Double.NEGATIVE_INFINITY ? Double.MAX_VALUE : slope);
-		slope = (slope == Double.POSITIVE_INFINITY ? -Double.MAX_VALUE : slope);
-		
-		
-		Line l1 = new Line(startX, startY, endX, endY);
-		l1.setStrokeWidth(2);
-
-		double moveX = (Math.cos(Math.atan(-slope))*5*Math.sqrt(2));
-		double moveY = (Math.abs(Math.sin(Math.atan(-slope))*5*Math.sqrt(2)));
-		
-		
-		
-		Rectangle r1 = new Rectangle(endX - 5, endY - 5, 10, 10);
-		r1.setFill(Color.WHITE);
-		r1.setStroke(Color.BLACK);
-		r1.setStrokeWidth(2);
-		// System.out.println(Math.toDegrees(Math.atan(height/width)));
-		// System.out.println(Math.toDegrees(Math.atan(height/width)));
-		r1.setRotate(Math.toDegrees(Math.atan(height / width)) + 45);
-		
-		if (width > 0){
-			r1.setLayoutX(-moveX);
-		}
-		else if (width < 0){
-			r1.setLayoutX(moveX);
-		}
-		
-		if (height > 0){
-			r1.setLayoutY(-moveY);
-		}
-		else if (height < 0){
-			r1.setLayoutY(moveY);
-		}
-		
-		aggregation = (Path) Shape.union(r1, l1);
-		// somehow it's losing the color of the rectangle...
-
-		// combines line and arrow head so they are one shape
-		g.getChildren().addAll(aggregation);
-	}
-	
-	private static void drawBD(Scene fxScene, Group g, double startX, double startY, double endX, double endY) {
-
-		Path composition = new Path();
-		
-		double height = endY - startY;
-		double width = endX - startX;
+		double height = endY - startYValue;
+		double width = endX - startXValue;
 
 		double slope = height/width;
 		
@@ -177,55 +133,49 @@ public class Relationship {
 		slope = (slope == Double.POSITIVE_INFINITY ? -Double.MAX_VALUE : slope);
 		
 		
-		Line l1 = new Line(startX, startY, endX, endY);
-		l1.setStrokeWidth(2);
+		Line line = new Line(startXValue, startYValue, endXValue, endYValue);
+		line.setStrokeWidth(2);
 
-		Rectangle r1 = new Rectangle(endX - 5, endY - 5, 10, 10);
-		r1.setFill(Color.BLACK);
-		r1.setStroke(Color.BLACK);
-		r1.setStrokeWidth(2);
-		//System.out.println(Math.toDegrees(Math.atan(height / width)));
-		//System.out.println(Math.toDegrees(Math.atan(height / width)));
-		r1.setRotate(Math.toDegrees(Math.atan(height / width)) + 45);
-		// Rectangle r2 = new Rectangle(endX-10,endY-10,10,10);
-		// r2.setFill(Color.WHITE);
-		// r2.setStroke(Color.BLACK);
-		// r2.setStrokeWidth(2);
-		// r2.setRotate(Math.toDegrees(Math.atan(height/width)));
-		/*
-		 * Rectangle r3 = new Rectangle(startX,startY+2*height, width, height);
-		 * r3.setFill(Color.WHITE); r3.setStroke(Color.BLACK);
-		 * r3.setStrokeWidth(2);
-		 */
+		Rectangle diamond = new Rectangle(endX - 5, endY - 5, 10, 10);
+		if (color == "White") {
+			diamond.setFill(Color.WHITE);
+		} else { // color is black
+			diamond.setFill(Color.BLACK);
+		}
+		diamond.setStroke(Color.BLACK);
+		diamond.setStrokeWidth(2);
+		diamond.setRotate(Math.toDegrees(Math.atan(height / width)) + 45);
 		
 		double moveX = (Math.cos(Math.atan(-slope))*5*Math.sqrt(2));
 		double moveY = (Math.abs(Math.sin(Math.atan(-slope))*5*Math.sqrt(2)));
 		
 		if (width > 0){
-			r1.setLayoutX(-moveX);
+			diamond.setLayoutX(-moveX);
 		}
 		else if (width < 0){
-			r1.setLayoutX(moveX);
+			diamond.setLayoutX(moveX);
 		}
 		
 		if (height > 0){
-			r1.setLayoutY(-moveY);
+			diamond.setLayoutY(-moveY);
 		}
 		else if (height < 0){
-			r1.setLayoutY(moveY);
+			diamond.setLayoutY(moveY);
 		}
 		
-		composition = (Path) Shape.union(r1, l1);
-		
-		g.getChildren().addAll(composition);
+		group.getChildren().addAll(line, diamond);
 	}
-	
-	private static void drawTriangle(Scene fxScene, Group g, double startX, double startY, double endX, double endY) {
+
+	// Draw generalization line
+	static void drawGeneralization(Group group, double startX, double startY, double endX, double endY) {
 		
-		Path generalization = new Path();
+		startXValue = startX;
+		startYValue = startY;
+		endXValue = endX;
+		endYValue = endY;
 		
-		double height = endY-startY;
-		double width = endX-startX;
+		double height = endYValue - startYValue;
+		double width = endXValue - startXValue;
 		double slope = height/width;
 		
 		//Diving by 0 is bad
@@ -283,18 +233,22 @@ public class Relationship {
 		}
 		
 		//Draw stem of arrow. 
-		Line l1 = new Line(startX, startY,endX , endY);
-		l1.setStrokeWidth(2);
-		generalization = (Path) Shape.union(l1, triangle);
-		g.getChildren().addAll(generalization);
+		Line line = new Line(startX, startY,endX , endY);
+		line.setStrokeWidth(2);
+		
+		group.getChildren().addAll(line, triangle);
 	}
 	
-	private static void drawDependency(Scene fxScene, Group g, double startX, double startY, double endX, double endY) {
+	// Draw dependency line
+	static void drawDependency(Group group, double startX, double startY, double endX, double endY) {
 		
-		Path dependency = new Path();
+		startXValue = startX;
+		startYValue = startY;
+		endXValue = endX;
+		endYValue = endY;
 		
-		double height = endY-startY;
-		double width = endX-startX;
+		double height = endYValue - startYValue;
+		double width = endXValue - startXValue;
 		double slope = height/width;
 		
 		//Diving by 0 is bad
@@ -302,6 +256,7 @@ public class Relationship {
 		slope = (slope == Double.POSITIVE_INFINITY ? -Double.MAX_VALUE : slope);
 		
 		double angle = Math.atan(slope);
+		// what are these?
 		double l2x, l2y ,l4x, l4y;
 		
 		//Perpendicular angles*length
@@ -330,33 +285,54 @@ public class Relationship {
 		
 		
 		//Polygon triangle = new Polygon(triPoints);
-		Polyline arrowHead = new Polyline(arrowPoints);
-		arrowHead.setStroke(Color.BLACK);
-		arrowHead.setStrokeWidth(2);
+		Polyline arrowhead = new Polyline(arrowPoints);
+		arrowhead.setStroke(Color.BLACK);
+		arrowhead.setStrokeWidth(2);
 		
 		double moveX = (Math.cos(Math.atan(-slope))*10);
 		double moveY = (Math.abs(Math.sin(Math.atan(-slope))*10));
 		
 		if (width > 0){
-			arrowHead.setLayoutX(-moveX);
+			arrowhead.setLayoutX(-moveX);
 		}
 		else if (width < 0){
-			arrowHead.setLayoutX(moveX);
+			arrowhead.setLayoutX(moveX);
 		}
 		
 		if (height > 0){
-			arrowHead.setLayoutY(-moveY);
+			arrowhead.setLayoutY(-moveY);
 		}
 		else if (height < 0){
-			arrowHead.setLayoutY(moveY);
+			arrowhead.setLayoutY(moveY);
 		}
 		
-		Line l1 = new Line(startX, startY, endX, endY);
-		l1.setStrokeWidth(2);
-		l1.getStrokeDashArray().addAll(2.0, 5.0);
+		Line line = new Line(startX, startY, endX, endY);
+		line.setStrokeWidth(2);
+		line.getStrokeDashArray().addAll(2.0, 5.0);
 		
-		dependency = (Path) Shape.union(l1, arrowHead);
-		
-		g.getChildren().addAll(dependency);
+		group.getChildren().addAll(line, arrowhead);
+	}
+	
+	
+	// Getters and setters 
+
+	public String getRelType() {
+		return relType;
+	}
+	
+	public static double getStartXValue() {
+		return startXValue;
+	}
+	
+	public static double getStartYValue() {
+		return startYValue;
+	}
+	
+	public static double getEndXValue() {
+		return endXValue;
+	}
+	
+	public static double getEndYValue() {
+		return endYValue;
 	}
 }
