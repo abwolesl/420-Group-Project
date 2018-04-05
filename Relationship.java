@@ -10,25 +10,37 @@ import javafx.scene.shape.Rectangle;
 
 public class Relationship extends Line {
 	
+	//X & Y coordinates of where user started and ended drag gesture.
 	private static double startingPointX, startingPointY, currentEndingPointX, currentEndingPointY;
 
+	//newLine is the guideline that displays while drawing a relationship.
 	private static Line newLine = null;
+	//isLineBeingDrawn describes if an option for drawing a relationship is active (button clicked but not drawn)
 	private static boolean isLineBeingDrawn = false;
 	
+	//String representation of the type of this relationship.
 	private static String relType = "";
 	
+	//Describes X & Y coordinates of the start of this relationship and X & Y coordinates of the end of this relationship.
 	private static double startXValue;
 	private static double startYValue;
 	private static double endXValue;
 	private static double endYValue;
 
+	
+	/** Relationship constructor.
+	 * @param UMLScene Scene where user drags to draw this relationship.
+	 * @param group Group where this relationship is placed. 
+	 * @param relationshipType Type of this relationship.
+	 */
 	public Relationship (Scene UMLScene, Group group, String relationshipType) {
 		
 		relType = relationshipType;
 		drawLine(UMLScene, group, relationshipType);
 	}
 	
-	static void drawLine(Scene UMLScene, Group group, String option) {
+	//draws guideline from user click until user releases mouse. Then draws this Relationship's type. 
+	private static void drawLine(Scene UMLScene, Group group, String option) {
 
 		// mouse pressed, user is about to draw a new line
 		UMLScene.setOnMousePressed((MouseEvent event) -> {
@@ -116,6 +128,14 @@ public class Relationship extends Line {
 	// Draw aggregation or composition line
 	// Logic for both lines is identical, only difference is the fill of the arrowhead (diamond)
 	// This color is passed as a parameter
+	/** Draws aggregation or composition based on selection. 
+	 * @param group Group is container to draw/add this Relationship to. 
+	 * @param startX Beginning point X value to draw this Relationship.
+	 * @param startY Beginning point Y value to draw this Relationship. 
+	 * @param startY End point X value to draw this Relationship.
+	 * @param startY End point Y value to draw this Relationship.
+	 * @param color Determines aggregation(black) or composition(white)
+	 */
 	static void drawAggregationOrComposition(Group group, double startX, double startY, double endX, double endY, String color) {
 		
 		startXValue = startX;
@@ -166,7 +186,14 @@ public class Relationship extends Line {
 		group.getChildren().addAll(line, diamond);
 	}
 
-	// Draw generalization line
+	
+	/** Draws generalization with input parameters to determine position and length.
+	 * @param group Group is container to draw/add this Relationship to. 
+	 * @param startX Beginning point X value to draw this Relationship.
+	 * @param startY Beginning point Y value to draw this Relationship. 
+	 * @param startY End point X value to draw this Relationship.
+	 * @param startY End point Y value to draw this Relationship.
+	 */
 	static void drawGeneralization(Group group, double startX, double startY, double endX, double endY) {
 		
 		startXValue = startX;
@@ -239,7 +266,13 @@ public class Relationship extends Line {
 		group.getChildren().addAll(line, triangle);
 	}
 	
-	// Draw dependency line
+	/** Draws dependency with input parameters to determine position and length.
+	 * @param group Group is container to draw/add this Relationship to. 
+	 * @param startX Beginning point X value to draw this Relationship.
+	 * @param startY Beginning point Y value to draw this Relationship. 
+	 * @param startY End point X value to draw this Relationship.
+	 * @param startY End point Y value to draw this Relationship.
+	 */
 	static void drawDependency(Group group, double startX, double startY, double endX, double endY) {
 		
 		startXValue = startX;
@@ -316,22 +349,37 @@ public class Relationship extends Line {
 	
 	// Getters and setters 
 
+	/** Returns type of this Relationship as a String.
+	 * @return relType of this Relationship
+	 */
 	public String getRelType() {
 		return relType;
 	}
 	
+	/** Returns X value of beginning point of this Relationship.
+	 * @return startXValue
+	 */
 	public static double getStartXValue() {
 		return startXValue;
 	}
 	
+	/** Returns value of beginning point of this Relationship.
+	 * @return startYValue
+	 */
 	public static double getStartYValue() {
 		return startYValue;
 	}
 	
+	/** Returns value of end point of this Relationship.
+	 * @return endXValue
+	 */
 	public static double getEndXValue() {
 		return endXValue;
 	}
 	
+	/** Returns value of end point of this Relationship.
+	 * @return endYValue
+	 */
 	public static double getEndYValue() {
 		return endYValue;
 	}

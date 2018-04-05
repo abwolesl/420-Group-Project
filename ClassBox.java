@@ -1,27 +1,28 @@
 
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseDragEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.control.TextArea;
 import javafx.scene.paint.Color;
 import javafx.scene.Group;
-import javafx.scene.shape.Shape;
-import javafx.scene.layout.VBox;
 
 public class ClassBox {
 
 	 private double startX, startY;
 	 private static double width;
 	 private static double height;
+	 
+	 //Rectangle area where user can click & drag to move this Class Box.
 	 private Rectangle dragArea;
+	 
+	 //Rectangle parts of ClassBox
 	 private Rectangle rTop, rMid, rBot;
+	 
+	 //TextArea parts of ClassBox
 	 private TextArea tTop, tMid, tBot;
+	 
+	 //Rectangle area where user can click & drag to resize this Class Box.
 	 private Rectangle resizeArea;
 	
-	//Constructor..Sets coordinate fields, makes the models for Rectangles, TextAreas, dragArea, & resizeArea
-	//Empty constructor, currently called by UML.java to just place one on the screen. 
+	/** ClassBox Constructor. Initializes all parts including dragArea and resizeArea & draws class box. */
 	public ClassBox() {
 
 		this.startX = 200;
@@ -38,17 +39,25 @@ public class ClassBox {
 		
 	}
 	
-	//Constructor..Sets coordinate fields, makes the models for Rectangles, TextAreas, dragArea, & resizeArea
+	
+	/** Constructor with passed in parameters to specify location and shape.
+	 * @param startX X value of top left of this ClassBox.
+	 * @param startY Y value of top left of this ClassBox.
+	 * @param width Width of this ClassBox.
+	 * @param height Height of this ClassBox.
+	 */
 	public ClassBox(double startX, double startY, double width, double height){
 		
 		this.startX = startX;
 		this.startY = startY;
 		this.width = width;
 		this.height = height;
+		
 		this.dragArea = new Rectangle(startX, startY, width, height);
 		dragArea.setStrokeWidth(2);
 		dragArea.setStroke(Color.RED);
 		dragArea.setFill(Color.TRANSPARENT);
+		
 		updateBoxes(this.startX, this.startY, this.width, height);
 		updateTextAreas(this.startX, this.startY, this.width, height);
 		
@@ -61,7 +70,13 @@ public class ClassBox {
 	//Method to update Rectangles within ClassBox.
 	//Called whenever the model needs to be updated, like when it's dragged or resized. 
 	//Also gets called when ClassBox is created. 
-	void updateBoxes(double startX, double startY, double width, double height) {
+	/** Updates the boxes within this ClassBox to necessary location and size. 
+	 * @param startX X value to make new X value of top left coodinate of this ClassBox.
+	 * @param startY Y value to make new Y value of top-left coordinate of this ClassBox.
+	 * @param width Width value to make new width of this ClassBox.
+	 * @param height Height value to make new height of this ClassBox.
+	 */
+	public void updateBoxes(double startX, double startY, double width, double height) {
 		
 		// Rectangle(startX, startY, width, height)GUI
 		
@@ -127,7 +142,13 @@ public class ClassBox {
 	//Method to update TextAreas within ClassBox.
 	//Called whenever the model needs to be updated, like when it's dragged or resized. 
 	//Also gets called when ClassBox is created. 
-	private void updateTextAreas(double startX, double startY, double width,
+	/** Updates the TextAreas within this ClassBox to necessary location and size. 
+	 * @param startX X value to make new X value of top left coodinate of this ClassBox.
+	 * @param startY Y value to make new Y value of top-left coordinate of this ClassBox.
+	 * @param width Width value to make new width of this ClassBox.
+	 * @param height Height value to make new height of this ClassBox.
+	 */
+	public void updateTextAreas(double startX, double startY, double width,
 			double height) {
 		
 		if (width < -1) {
@@ -176,32 +197,41 @@ public class ClassBox {
 	
 	//Draws the ClassBox inside the group. 
 	//This is the round-about way that I'm drawing the ClassBox, but it works.
+	/** Draws this ClassBox on the screen.
+	 * @param g The Group in which this ClassBox is placed. 
+	 */
 	public void drawMe(Group g){
 		g.getChildren().addAll(dragArea, resizeArea, rTop,rMid,rBot,tTop,tMid,tBot);
 		//g.getChildren().addAll(resizeArea, rTop,rMid,rBot,tTop,tMid,tBot);
-		//UML.setUserClicked(false);
+		UML.setUserClicked(false);
 		
 	}
 	
 	//Getter X value of Top left coordinate
+	/**Returns this ClassBox's startX field. 
+	 * @return This ClassBox's startX field.
+	 */
 	public double getStartX() {
 		return this.startX;
 	}
 	
 	//Getter Y value of Top left coordinate
+	/**Returns this ClassBox's startX field.
+	 * @return This ClassBox's startY field.
+	 */
 	public double getStartY() {
 		return this.startY;
 	}
 	
 	//Helper function for makeDraggable
-	public void setStartX(double x) {
+	private void setStartX(double x) {
 		this.startX = x;
 		updateBoxes(x, startY, width, height);
 		updateTextAreas(x,startY, width, height);
 	}
 	
 	//Helper function for makeDraggable
-	public void setStartY(double y) {
+	private void setStartY(double y) {
 		this.startY = y;
 		updateBoxes(startX, y, width, height);
 		updateTextAreas(startX, y, width, height);
@@ -210,9 +240,10 @@ public class ClassBox {
 	//Helper function for makeResizable
 	//Does the box logic that happens a lot to ensure minimum size, correct orientation.
 	//Maybe integrate with setEndY
-	public void setEndX(double x) {
+	private void setEndX(double x) {
 		width = x - startX;
 		
+		//logic to "reverse" box to proper orientation if necessary
 		if (width < -1) {
 			this.width = -width;
 			this.startX = startX - width;
@@ -220,7 +251,7 @@ public class ClassBox {
 		if (width < 130) {
 			this.width = 130;
 		}
-		//
+		
 		updateBoxes(startX, startY, width, height);
 		updateTextAreas(startX, startY, width, height);
 	}
@@ -228,9 +259,10 @@ public class ClassBox {
 	//Helper function for makeResizable
 	//Does the box logic that happens a lot to ensure minimum size, correct orientation.
 	//Maybe integrate with setEndX
-	public void setEndY(double y) {
+	private void setEndY(double y) {
 		height = y - startY;
 		
+		//logic to "reverse" box to proper orientation if necessary
 		if (height < -1) {
 			height = -height;
 			startY = startY - height;
@@ -256,7 +288,7 @@ public class ClassBox {
 		});
 	}
 	
-	//Creates mouse listener for resizeArea (Green square @ bottom right)
+	//Creates mouse listener for resizeArea (Green square at bottom right)
 	private void makeResizable(){
 		
 		this.resizeArea.setOnMouseDragged(eventDragged -> {
@@ -345,6 +377,7 @@ public class ClassBox {
 			resizeArea.setFill(Color.TRANSPARENT);
 			dragArea.setStroke(Color.TRANSPARENT);
 			
+			//Moving from dragArea to resizeArea to keep both visible
 			this.resizeArea.setOnMouseEntered(eventEntered -> {
 				resizeArea.setFill(Color.GREEN);
 				dragArea.setStroke(Color.RED);
@@ -359,14 +392,25 @@ public class ClassBox {
 		
 	}
 	
+	/** Returns height of this ClassBox.
+	 * @return height This ClassBox's height.
+	 */
 	public static double getHeight() {
 		return height;
 	}
 	
+	/** Returns width of this ClassBox.
+	 * @return width This ClassBox's height.
+	 */
 	public static double getWidth() {
 		return width;
 	}
 	
+	
+	/** Returns text as string currently located in specified TextArea.
+	 * @param t TextArea to get text from.
+	 * @return String Text value of Textbox.
+	 */
 	public static String getText(TextArea t) {
 		return t.getText();
 	}

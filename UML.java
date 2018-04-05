@@ -1,13 +1,14 @@
-// swetr iteration 2
-// UML.java handles all the GUI interactions (button clicks, etc.)
+/**
+ * @author SWETR
+ * @Version 2.2
+ * @since April 2018
+ */
 
 import java.util.ArrayList;
-
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -24,24 +25,41 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.scene.control.TextArea;
 
+
 public class UML extends Application {
+	
+	/** startingPointX describes the last stored value pertaining to the X coordinate of the start of a mouse drag gesture */
+	double startingPointX;
+	/** startingPointY describes the last stored value pertaining to the Y coordinate of the start of a mouse drag gesture */
+	double startingPointY;
+	/** currentEndingPointX describes the last stored value pertaining to the X coordinate of the end of a mouse drag gesture */
+	double currentEndingPointX;
+	/** currentEndingPointY describes the last stored value pertaining to the Y coordinate of the end of a mouse drag gesture */
+	double currentEndingPointY;
 
-	double startingPointX, startingPointY, currentEndingPointX, currentEndingPointY;
-
-	TextArea newTextField = null;
+	/** isTextFieldBeingDrawn represents whether or not a textField is the current option that the user wishes to draw */
 	boolean isTextFieldBeingDrawn = false;
+	
+	/** drawingBox is the drawing area for the UML editor. All user created objects are placed inside of this area. */
 	public static VBox drawingBox;
 	
+	/** userClicked describes whether or not an object has been selected to be drawn. Resets to false after every drawn object. */
 	static boolean userClicked = false;
 		
+	/** screenWidth describes the width of the screen that the program is currently being ran in. Used to calculate sizes for the windows. */
+	double screenWidth = Screen.getPrimary().getVisualBounds().getWidth();
+	/** screenHeight describes the height of the screen that the program is currently being ran in. Used to calculate sizes for the windows. */
+	double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
+	
+	TextArea newTextField = null;
+	
 	public static void main(String[] args) {
 		launch(args);
 	}
 	
-	Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
-	double screenWidth = primaryScreenBounds.getWidth();
-	double screenHeight = primaryScreenBounds.getHeight();
-
+	/** start Initializes the window of the UML editor and calls {@link createUMLOptions}. 
+	 * @param UMLStage The root node of the JavaFX application. Provides 
+	 */
 	@Override
 	public void start(Stage UMLStage) {
 		Group group = new Group();
@@ -54,6 +72,12 @@ public class UML extends Application {
 		createUMLOptions(UMLStage, UMLScene, group);
 	}
 
+	
+	//createUML options creates all of the objects in an initial window. 
+	//Including the top row of buttons, the left-hand side column of buttons, and the drawingBox.
+	//UMLStage is the primary stage on which the Scene, UMLScene is displayed.
+	//UMLScene is the container for the Group.
+	//group contains all of the JavaFX elements such as Buttons and shapes. 
 	private void createUMLOptions(Stage UMLStage, Scene UMLScene, Group group) {
 		// creates vertical box to make formatting easier
 		VBox optionsVBox = new VBox(10);
@@ -63,7 +87,7 @@ public class UML extends Application {
 		optionsVBox.setTranslateY(UMLStage.getHeight()*.05); // shift vbox down slightly
 		optionsVBox.setTranslateX(UMLStage.getWidth()*.005); // shift vbox over to the left so under top row of buttons
 		optionsVBox.setMaxSize(30, 100);
-		//optionsVBox.setStyle("-fx-border-color: black");
+		
 		HBox buttonsHBox = new HBox(10);
 		buttonsHBox.setPadding(new Insets(10)); // sets padding between nodes (so buttons)
 		buttonsHBox.setTranslateY(screenHeight*.001);
@@ -86,8 +110,11 @@ public class UML extends Application {
 		group.getChildren().addAll(buttonsHBox,optionsVBox,drawingBox);
 	}
 	
-	// These buttons allow user to draw and edit a UML diagram
-	private void createUMLButtons(VBox optionsVBox, Scene drawingScene, Group group) {
+	// Creates the left-hand side buttons that encompass the options that users have to pick from to create.
+	//optionsVBox is the container in which all of the buttons are stored.
+	//UMLScene is the container for the Group.
+	//group contains all of the JavaFX elements such as Buttons and shapes. 
+	private void createUMLButtons(VBox optionsVBox, Scene UMLScene, Group group) {
 		
 		Button aggregation = new Button("Aggregation");
 		Button composition = new Button("Composition");
@@ -105,8 +132,8 @@ public class UML extends Application {
 			b.setOnAction((event) -> {
 				setUserClicked(true);
 				String option = b.getText();
-				Relationship newRelationship = new Relationship(drawingScene, group, option);
-				//newRelationship.setScene(drawingScene, group);
+				Relationship newRelationship = new Relationship(UMLScene, group, option);
+				//newRelationship.setScene(UMLScene, group);
 				// Relation.getRelationship() returns the relationship
 				// then draw it doing
 				// group.getChildren().add(relationship);
@@ -131,7 +158,7 @@ public class UML extends Application {
 		// Handle event
 		addText.setOnAction((event) -> {
 			setUserClicked(true);
-			drawTextField(drawingScene, group);
+			drawTextField(UMLScene, group);
 		});
 		/*
 		// press this button before clicking on node so prepared for mouse clicks
@@ -139,7 +166,7 @@ public class UML extends Application {
 		
 		// Handle event
 		edit.setOnAction((event) -> {
-			drawingScene.setOnMousePressed((MouseEvent drawingEvent) -> {
+			UMLScene.setOnMousePressed((MouseEvent drawingEvent) -> {
 				ArrayList<Node> nodes = new ArrayList<Node>();
 				nodes = getAllNodes(group);
 				for (Node node : nodes ) {
@@ -183,12 +210,17 @@ public class UML extends Application {
 	// get all nodes of parent (in our case, group)
 	// JavaFX is hierarchical, so able to get all children (nodes)
 	// of the group
-	public static ArrayList<Node> getAllNodes(Parent root) {
+	private static ArrayList<Node> getAllNodes(Parent root) {
 	    ArrayList<Node> nodes = new ArrayList<Node>();
 	    addAllDescendents(root, nodes);
 	    return nodes;
 	}
 
+	//Effectively adds all notes of a root node to nodes ArrayList.
+	//Adds all children of specific parent to nodes ArrayList. 
+	//Recursively calls self in case that a child is also a parent.
+	//parent is the root node.
+	//nodes is the ArrayList of nodes that houses all child nodes. 
 	private static void addAllDescendents(Parent parent, ArrayList<Node> nodes) {
 	    for (Node node : parent.getChildrenUnmodifiable()) {
 	        nodes.add(node);
@@ -198,7 +230,10 @@ public class UML extends Application {
 	    }
 	}
 
-	// creates new, save, exit, help buttons
+	// Creates new, save, exit, help buttons.
+	//HBox buttonsHBox is the container for the buttons
+	//UMLStage is passed along to createExitWarnings for the exit button 
+	//    so that the exit button may properly close the whole application.
 	private void createTopButtons(HBox buttonsHBox, Stage UMLStage) {
 		Button newButton = new Button();
 		newButton.setText("New");
@@ -263,7 +298,7 @@ public class UML extends Application {
 		});
 	}
 
-	// Help screen, informing user how to interact with the application
+	// Help screen, informing user how to interact with the application.
 	private void createHelpStage() {
 		Stage helpStage = new Stage();
 		helpStage.setTitle("SWETR's UML Diagram Creation Application");
@@ -309,6 +344,7 @@ public class UML extends Application {
 		createUMLOptions(UMLStage, UMLScene, group);
 	}
 
+	// Creates and presents new window to user to confirm that they want to exit program.
 	private void createExitWarning(Stage UMLStage) {
 		Stage exitWarningStage = new Stage();
 		StackPane exitRoot = new StackPane();
@@ -360,6 +396,7 @@ public class UML extends Application {
 		// maybe add save button to message
 	}
 	
+	//Creates and draws a TextArea for the user.
 	private void drawTextField(Scene UMLScene, Group group) {
 
 		UMLScene.setOnMousePressed((MouseEvent event) -> {
@@ -392,17 +429,25 @@ public class UML extends Application {
 
 		UMLScene.setOnMouseReleased((MouseEvent event) -> {
 			if (isTextFieldBeingDrawn == true) {
-				newTextField = null;
+				//newTextField = null;
 				isTextFieldBeingDrawn = false;
 				setUserClicked(false);
 			}
 		});
 	}
 	
+
+	/**Sets the value, {@link userClicked} to passed in boolean value.
+	 * @param b Boolean value to set <code>userClicked</code> to.
+	 */
 	public static void setUserClicked (boolean b) {
 		userClicked = b;
 	}
 	
+	
+	/**Returns value associated with {@link userClicked}
+	 * @return Value of userClicked boolean.
+	 */
 	public static boolean getUserClicked () {
 		return userClicked;
 	}
