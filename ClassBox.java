@@ -25,9 +25,11 @@ public class ClassBox {
 	// Rectangle area where user can click to remove the Class Box.
 	private Rectangle deleteArea;
 
+	private static boolean isLineBeingDrawn = false;
+
 	/**
-	 * ClassBox Constructor. Initializes all parts including dragArea, resizeArea, and deleteArea
-	 * & draws class box.
+	 * ClassBox Constructor. Initializes all parts including dragArea, resizeArea,
+	 * and deleteArea & draws class box.
 	 */
 	public ClassBox() {
 
@@ -324,7 +326,8 @@ public class ClassBox {
 		});
 	}
 
-	// Creates mouse listener for resizeArea (Green square at bottom right corner of drag area)
+	// Creates mouse listener for resizeArea (Green square at bottom right corner of
+	// drag area)
 	private void makeResizable() {
 		this.resizeArea.setOnMouseDragged(eventDragged -> {
 			dragArea.setStroke(Color.RED);
@@ -339,7 +342,8 @@ public class ClassBox {
 		});
 	}
 
-	// Creates mouse listener for deleteArea (Red square at top left corner of drag area)
+	// Creates mouse listener for deleteArea (Red square at top left corner of drag
+	// area)
 	private void makeDeletable() {
 		this.deleteArea.setOnMouseClicked(event -> {
 			removeClassBox();
@@ -352,9 +356,12 @@ public class ClassBox {
 	private void updateResizeArea() {
 		if (resizeArea == null) {
 			resizeArea = new Rectangle(startX + width, startY + height, 7.5, 7.5);
-			resizeArea.setFill(Color.GREEN);
+			resizeArea.setFill(Color.TRANSPARENT);
 			resizeArea.setOpacity(50);
+		} else {
+			resizeArea.setFill(Color.GREEN);
 		}
+		
 		resizeArea.setX(startX + width);
 		resizeArea.setY(startY + height);
 	}
@@ -363,9 +370,12 @@ public class ClassBox {
 	private void updateDeleteArea() {
 		if (deleteArea == null) {
 			deleteArea = new Rectangle(startX - 7, startY - 7, 7.5, 7.5);
-			deleteArea.setFill(Color.RED);
+			deleteArea.setFill(Color.TRANSPARENT);
 			deleteArea.setOpacity(50);
+		} else {
+			deleteArea.setFill(Color.RED);
 		}
+		
 		deleteArea.setX(startX - 7);
 		deleteArea.setY(startY - 7);
 	}
@@ -374,9 +384,11 @@ public class ClassBox {
 	private void updateDragArea() {
 		if (dragArea == null) {
 			dragArea = new Rectangle(startX - 7.5, startY - 7.5, width + 15, height + 15);
-			dragArea.setStroke(Color.RED);
+			dragArea.setStroke(Color.TRANSPARENT);
 			dragArea.setFill(Color.TRANSPARENT);
 			dragToggle();
+		} else {
+			dragArea.setStroke(Color.RED);
 		}
 		dragArea.setX(this.startX - 7.5);
 		dragArea.setY(this.startY - 7.5);
@@ -429,17 +441,23 @@ public class ClassBox {
 	// Setting .isVisible(false) doesn't allow setOnMouseEntered to activate, I
 	// think the object isn't there anymore.
 	private void dragToggle() {
-
 		dragArea.setOnMouseExited(eventExited -> {
 			resizeArea.setFill(Color.TRANSPARENT);
-			dragArea.setStroke(Color.TRANSPARENT);
 			deleteArea.setFill(Color.TRANSPARENT);
+			dragArea.setStroke(Color.TRANSPARENT);
 
-			// Moving from dragArea to resizeArea to keep both visible
+			// Moving from dragArea to resizeArea to keep everything visible
 			resizeArea.setOnMouseEntered(eventEntered -> {
 				resizeArea.setFill(Color.GREEN);
-				dragArea.setStroke(Color.RED);
 				deleteArea.setFill(Color.RED);
+				dragArea.setStroke(Color.RED);
+			});
+			
+			// Moving from dragArea to resizeArea to keep both visible
+			deleteArea.setOnMouseEntered(eventEntered -> {
+				resizeArea.setFill(Color.GREEN);
+				deleteArea.setFill(Color.RED);
+				dragArea.setStroke(Color.RED);
 			});
 		});
 
@@ -479,7 +497,7 @@ public class ClassBox {
 		return t.getText();
 	}
 
-	public void removeClassBox() {
+	private void removeClassBox() {
 		Group group = UML.getGroup();
 		group.getChildren().removeAll(dragArea, resizeArea, rTop, rMid, rBot, tTop, tMid, tBot);
 	}
