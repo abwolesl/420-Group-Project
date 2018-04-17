@@ -4,17 +4,13 @@
  * @since April 2018
  */
 
-import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -24,6 +20,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
 
 
 public class UML extends Application {
@@ -66,7 +63,13 @@ public class UML extends Application {
 	public void start(Stage UMLStage) {
 		group = new Group();
 		UMLStage.setTitle("SWETR UML Diagram Application");
+		// image courtesy of google
+		// image source: https://thenounproject.com/term/sweater/
+		UMLStage.getIcons().add(new Image("swetr_icon.png"));
+		
 		Scene UMLScene = new Scene(group, screenWidth*.99, screenHeight*.95); // dimensions can be changed
+		
+		UMLScene.getStylesheets().add("stylesheet.css");
 
 		UMLStage.setScene(UMLScene);
 		UMLStage.show();
@@ -135,10 +138,6 @@ public class UML extends Application {
 				setUserClicked(true);
 				String option = b.getText();
 				Relationship newRelationship = new Relationship(UMLScene, group, option);
-				//newRelationship.setScene(UMLScene, group);
-				// Relation.getRelationship() returns the relationship
-				// then draw it doing
-				// group.getChildren().add(relationship);
 			});
 		}
 
@@ -160,52 +159,10 @@ public class UML extends Application {
 		// Handle event
 		addText.setOnAction((event) -> {
 			setUserClicked(true);
-			//drawTextField(UMLScene, group);
 			new TextBox().drawMe(group);
 		});
 		
-		Button delete = new Button("Delete");
-		
-		delete.setOnAction((event) -> {
-			
-			//ClassBox.removeClassBox();
-			ClassBox.listenForDeletion(group);
-			
-			/*
-			ArrayList<Node> nodes = new ArrayList<Node>();
-			nodes = getAllNodes(group);
-			for (Node node : nodes ) {
-				node.setOnMouseClicked((eventClicked) -> {
-					group.getChildren().remove(node);
-				});
-			}
-			*/
-		});
-		
-		optionsVBox.getChildren().addAll(classBox, aggregation, composition, generalization, dependency, addText, delete);
-	}
-	
-	// get all nodes of parent (in our case, group)
-	// JavaFX is hierarchical, so able to get all children (nodes)
-	// of the group
-	private static ArrayList<Node> getAllNodes(Parent root) {
-	    ArrayList<Node> nodes = new ArrayList<Node>();
-	    addAllDescendents(root, nodes);
-	    return nodes;
-	}
-
-	//Effectively adds all notes of a root node to nodes ArrayList.
-	//Adds all children of specific parent to nodes ArrayList. 
-	//Recursively calls self in case that a child is also a parent.
-	//parent is the root node.
-	//nodes is the ArrayList of nodes that houses all child nodes. 
-	private static void addAllDescendents(Parent parent, ArrayList<Node> nodes) {
-	    for (Node node : parent.getChildrenUnmodifiable()) {
-	        nodes.add(node);
-	        if (node instanceof Parent) {
-	            addAllDescendents((Parent)node, nodes);
-	        }
-	    }
+		optionsVBox.getChildren().addAll(classBox, aggregation, composition, generalization, dependency, addText);
 	}
 
 	// Creates new, save, exit, help buttons.
@@ -280,6 +237,7 @@ public class UML extends Application {
 	private void createHelpStage() {
 		Stage helpStage = new Stage();
 		helpStage.setTitle("SWETR's UML Diagram Creation Application");
+		helpStage.getIcons().add(new Image("swetr_icon.png"));
 
 		Text welcomeToSWETR = new Text();
 		welcomeToSWETR.setText("Welcome to SWETR's UML Diagram Creation Application \n\n");
@@ -326,8 +284,10 @@ public class UML extends Application {
 	private void createNewDiagram() {
 		Stage UMLStage = new Stage();
 		UMLStage.setTitle("New UML Diagram");
+		UMLStage.getIcons().add(new Image("swetr_icon.png"));
 		Group group = new Group();
-		Scene UMLScene = new Scene(group, 1400, 700);
+		Scene UMLScene = new Scene(group, screenWidth*.99, screenHeight*.95);
+		UMLScene.getStylesheets().add("stylesheet.css");
 		UMLStage.setScene(UMLScene); // dimensions can be changed
 		UMLStage.show();
 
@@ -337,6 +297,8 @@ public class UML extends Application {
 	// Creates and presents new window to user to confirm that they want to exit program.
 	private void createExitWarning(Stage UMLStage) {
 		Stage exitWarningStage = new Stage();
+		exitWarningStage.setTitle("Exit Warning!");
+		exitWarningStage.getIcons().add(new Image("swetr_icon.png"));
 		StackPane exitRoot = new StackPane();
 
 		exitWarningStage.setScene(new Scene(exitRoot, 400, 300)); // dimensions can be changed
@@ -385,47 +347,6 @@ public class UML extends Application {
 
 		// maybe add save button to message
 	}
-	
-	//Creates and draws a TextArea for the user.
-	private void drawTextField(Scene UMLScene, Group group) {
-
-		UMLScene.setOnMousePressed((MouseEvent event) -> {
-			if (getUserClicked()) {
-				if (isTextFieldBeingDrawn == false) {
-	
-					newTextField = new TextArea();
-					newTextField.isResizable();
-					newTextField.setMinSize(150, 100);
-					newTextField.setWrapText(true);
-					newTextField.setPrefSize(50, 50);
-					startingPointX = event.getSceneX();
-					startingPointY = event.getSceneY();
-	
-					if (startingPointX > 160 && startingPointX < 1390 && startingPointY > 61 && startingPointY < 690) {
-	
-						newTextField.setTranslateX(startingPointX);
-						newTextField.setTranslateY(startingPointY);
-	
-						// Changes background color (light gray) and border (black)
-						newTextField.setStyle("-fx-background-color: #D3D3D3; -fx-border-color: #000000;");
-	
-						group.getChildren().add(newTextField);
-	
-						isTextFieldBeingDrawn = true;
-					}
-				}
-			}
-		});
-
-		UMLScene.setOnMouseReleased((MouseEvent event) -> {
-			if (isTextFieldBeingDrawn == true) {
-				//newTextField = null;
-				isTextFieldBeingDrawn = false;
-				setUserClicked(false);
-			}
-		});
-	}
-	
 
 	/**Sets the value, {@link userClicked} to passed in boolean value.
 	 * @param b Boolean value to set <code>userClicked</code> to.
