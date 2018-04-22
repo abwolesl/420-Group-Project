@@ -352,7 +352,7 @@ public class UML extends Application {
 
 						createUMLOptions(UMLStage, UMLScene, group);
 
-						readFile(file, UMLScene, group);
+						readFile(file,group);
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -551,24 +551,25 @@ public class UML extends Application {
 
 	}
 
-	private static void readFile(File file, Scene UMLScene, Group group) throws IOException {
+	private static void readFile(File file,Group group) throws IOException {
 		FileReader in = new FileReader(file);
 		BufferedReader br = new BufferedReader(in);
 		String line;
 		while ((line = br.readLine()) != null) {
-			String[] parts = line.split("-");
+			String[] parts = line.split("~~~~");
 
 			for (int i = 0; i < parts.length; i++) {
-				readString(parts[i], UMLScene, group);
+				readString(parts[i],group);
 			}
 		}
 
 	}
 
-	private static void readString(String action, Scene UMLScene, Group group) {
+	private static void readString(String action,Group group) {
 
 		String[] parts = action.split("/");
-
+		System.out.println(parts[0]);
+		
 		if (parts[0].equals("CLASSBOX")) {
 
 			double startX = Double.parseDouble(parts[1]);
@@ -578,16 +579,18 @@ public class UML extends Application {
 			ClassBox cBox = new ClassBox(startX, startY, width, height);
 			cBox.drawMe(group);
 
-		} /*
-			 * else if (parts[0].equals("Relationships")) { String relType = parts[1];
-			 * double startX = Double.parseDouble(parts[2]); double startY =
-			 * Double.parseDouble(parts[3]); double endX = Double.parseDouble(parts[4]);
-			 * double endY = Double.parseDouble(parts[5]);
-			 * 
-			 * switch(relType){ case "Aggregation": // Relationship rel = new
-			 * Relationship(); }
-			 */
+		}else if (parts[0].equals("Relationship")) {
+			
+			String relType = parts[1];
+			double startX = Double.parseDouble(parts[2]); 
+			double startY =Double.parseDouble(parts[3]);
+			double endX = Double.parseDouble(parts[4]);
+			double endY = Double.parseDouble(parts[5]);
+			
+			Relationship rel = new Relationship(group, relType, startX, startY, endX,endY);
+			group.getChildren().add(rel);
 
 	}
 
+}
 }

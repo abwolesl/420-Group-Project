@@ -7,8 +7,8 @@ import javafx.scene.Group;
 public class ClassBox {
 
 	 private double startX, startY;
-	 private static double width;
-	 private static double height;
+	 private double width;
+	 private double height;
 	 
 	 //Rectangle area where user can click & drag to move this Class Box.
 	 private Rectangle dragArea;
@@ -395,14 +395,14 @@ public class ClassBox {
 	/** Returns height of this ClassBox.
 	 * @return height This ClassBox's height.
 	 */
-	public static double getHeight() {
+	public double getHeight() {
 		return height;
 	}
 	
 	/** Returns width of this ClassBox.
 	 * @return width This ClassBox's height.
 	 */
-	public static double getWidth() {
+	public double getWidth() {
 		return width;
 	}
 	
@@ -416,8 +416,9 @@ public class ClassBox {
 	}
 	
 	public String whereAmI() {
-		return ("CLASSBOX/" + startX + "/" + startY + 
-							"/" + width + "/" + height + " -"); 
+		return ("CLASSBOX/" + startX + "/" + startY + "/" 
+				+ width + "/" + height + "/" + tTop.getText() +"/" 
+				+ tMid.getText() + "/" + tBot.getText() + "~~~~"); 
 	}
 	
 }
