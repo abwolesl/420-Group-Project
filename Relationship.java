@@ -112,7 +112,6 @@ private static double currentEndingPointY;
 					this.dragLine = new Line(startingPointX, startingPointY, currentEndingPointX, currentEndingPointY);
 					this.dragLine.setStroke(Color.CYAN);
 					this.dragLine.setStrokeWidth(10);
-					makeDraggable();
 					switch (option){
 						case "Aggregation":
 							drawAggregationOrComposition(group, startingPointX,startingPointY,currentEndingPointX,currentEndingPointY,"White");
@@ -198,7 +197,6 @@ private static double currentEndingPointY;
 			rHead.setLayoutY(moveY);
 		}
 		makeDraggable();
-		
 		group.getChildren().addAll(dragLine, line, rHead);
 	}
 
@@ -278,7 +276,7 @@ private static double currentEndingPointY;
 		//Draw stem of arrow. 
 		line = new Line(startX, startY,endX , endY);
 		line.setStrokeWidth(2);
-		
+		makeDraggable();
 		group.getChildren().addAll(dragLine, line, pHead);
 	}
 	
@@ -404,29 +402,33 @@ private static double currentEndingPointY;
 	
 	
 	private void makeDraggable() {
-		this.dragLine.setOnMouseClicked(eventClicked -> {
+		this.line.setOnMouseClicked(eventClicked -> {
 			startingPointX = eventClicked.getSceneX();
 			startingPointY = eventClicked.getSceneY();
 		});
 		
-		this.dragLine.setOnMouseDragged(eventDragged -> {
-			double deltaX = eventDragged.getSceneX() - startingPointX;
-			double deltaY = eventDragged.getSceneY() - startingPointY;
-			double dragX = eventDragged.getX(); 
-			double dragY = eventDragged.getY();
+		this.line.setOnMouseDragged(eventDragged -> {
+			double deltaX = checkBoundsX(eventDragged.getSceneX()) - startingPointX;
+			double deltaY = checkBoundsY(eventDragged.getSceneY()) - startingPointY;
+		
+			double dragX = checkBoundsX(eventDragged.getX()); 
+			double dragY = checkBoundsY(eventDragged.getY());
+			System.out.println(dragX);
 			updateRel(dragX, dragY, dragX + (endXValue - startXValue), dragY + (endYValue - startYValue), deltaX, deltaY);
 			eventDragged.consume();
+			startingPointX = line.getStartX();
+			startingPointY = line.getStartY();
+			//e = line.getEndX();
+			//this.endYValue = line.getEndY();
 		});
+		
 	}
 	
 	
 	private void updateRel(double startX, double startY, double endX, double endY, double deltaX, double deltaY)
 	{
 		
-		startXValue = startX;
-		startYValue = startY;
-		endXValue = endX;
-		endYValue = endY;
+		
 		
 		double height = endYValue - startYValue;
 		double width = endXValue - startXValue;
@@ -451,49 +453,137 @@ private static double currentEndingPointY;
 			l4y = -l4y;
 		}
 		
-		line.setStartX(checkBoundsX(startX));
+		line.setStartX(startX);
 		line.setStartY(startY);
-		line.setEndX(checkBoundsX(endX));
+		line.setEndX(endX);
 		line.setEndY(endY);
 		//Rectangle Head
 		if (rHead != null)	
 		{
-		rHead.setX(checkBoundsX(endX-5));
+		rHead.setX(endX-5);
 		rHead.setY(endY-5);
 		}
 		//Generalization (triangle)
 		if (pHead != null)
 		{	
-		System.out.println(pHead.getLayoutX() + "    " + pHead.getTranslateX());
-		pHead.setLayoutX(checkBoundsX(deltaX - l4x));
-		pHead.setLayoutY(deltaY - l4y);
+		updateTriangle(startX, startY, endX, endY);
 		}
 		//Dependency (arrow head)
 		if (plHead != null)
 		{
-		System.out.println("PlHead");
-		plHead.setLayoutX(checkBoundsX(deltaX - l4x));
-		System.out.println(plHead.getLayoutX());
+		//System.out.println("PlHead");
+		plHead.setLayoutX(deltaX - l4x);
+		//System.out.println(plHead.getLayoutX());
 		plHead.setLayoutY(deltaY - l4y);
 		}
 		
-		this.dragLine.setStartX(checkBoundsX(startX));
+		this.dragLine.setStartX(startX);
 		this.dragLine.setStartY(startY);
-		this.dragLine.setEndX(checkBoundsX(endX));
+		this.dragLine.setEndX(endX);
 		this.dragLine.setEndY(endY);
+		
 	}
 
 	private double checkBoundsX(double x) {
-		if (x < UML.drawingBox.getBoundsInParent().getMinX() + 7.5) { // left side of gray area
-			x = UML.drawingBox.getBoundsInParent().getMinX() + 7.5;
-		}
-		else {
-			if (x > UML.drawingBox.getBoundsInParent().getMaxX() - 7.5) { // right side of gray area
-				x = UML.drawingBox.getBoundsInParent().getMaxX() - 7.5;
+		//if (x < UML.drawingBox.getBoundsInParent().getMinX()) { // left side of gray area
+		//	x = UML.drawingBox.getBoundsInParent().getMinX();
+		//}
+		//else {
+			if (endXValue > startXValue) //Right Facing Line
+			{
+				if (x + (endXValue - startXValue) > UML.drawingBox.getBoundsInParent().getMaxX()) { // right side of gray area
+					x = UML.drawingBox.getBoundsInParent().getMaxX() - (endXValue - startXValue);
+				}
+				else {
+					if (x < UML.drawingBox.getBoundsInParent().getMinX()) { // left side 
+						x = UML.drawingBox.getBoundsInParent().getMinX();
+					}
+				}
 			}
-		}
+			else { // Left Facing Line
+				if (x + (endXValue - startXValue) <= UML.drawingBox.getBoundsInParent().getMinX()) { // left side of gray area
+					x = UML.drawingBox.getBoundsInParent().getMinX() + (startXValue - endXValue);
+				}
+				else {
+					if (x > UML.drawingBox.getBoundsInParent().getMaxX()) { // right side
+						x = UML.drawingBox.getBoundsInParent().getMaxX();
+				}
+			//}
+				}
+			}
 
 		return x;
+	}
+	
+	private double checkBoundsY(double y) {
+		//if (x < UML.drawingBox.getBoundsInParent().getMinX()) { // left side of gray area
+		//	x = UML.drawingBox.getBoundsInParent().getMinX();
+		//}
+		//else {
+			if (endYValue > startYValue) //Right Facing Line
+			{
+				if (y + (endYValue - startYValue) > UML.drawingBox.getBoundsInParent().getMaxY()) { // right side of gray area
+					y = UML.drawingBox.getBoundsInParent().getMaxY() - (endYValue - startYValue);
+				}
+				else {
+					if (y < UML.drawingBox.getBoundsInParent().getMinY()) { // left side 
+						y = UML.drawingBox.getBoundsInParent().getMinY();
+					}
+				}
+			}
+			else { // Left Facing Line
+				if (y + (endYValue - startYValue) <= UML.drawingBox.getBoundsInParent().getMinY()) { // left side of gray area
+					y = UML.drawingBox.getBoundsInParent().getMinY() + (startYValue - endYValue);
+				}
+				else {
+					if (y > UML.drawingBox.getBoundsInParent().getMaxY()) { // right side
+						y = UML.drawingBox.getBoundsInParent().getMaxY();
+				}
+			//}
+				}
+			}
+
+		return y;
+	}
+	
+	private void updateTriangle(double startX, double startY, double endX, double endY)
+	{
+		double height = endY-startY;
+		double width = endX-startX;
+		double slope = height/width;
+		
+		//Diving by 0 is bad
+		slope = (slope == Double.NEGATIVE_INFINITY ? Double.MAX_VALUE : slope);
+		slope = (slope == Double.POSITIVE_INFINITY ? -Double.MAX_VALUE : slope);
+		
+		double angle = Math.atan(slope);
+		double l2x, l2y ,l4x, l4y;
+		
+		//Perpendicular angles*length
+		l2x = Math.cos(angle + Math.PI/2) * 7.5;
+		l2y = Math.sin(angle + Math.PI/2) * 7.5;
+					
+		//Parallel angles*length
+		l4x = Math.cos(angle) * 10;
+		l4y = Math.sin(angle) * 10;
+		
+		//If drawn facing left, need to subtract instead of add to get coordinate. 
+		if (width <= 0) 
+		{
+			l4x = -l4x;
+			l4y = -l4y;
+		}
+		
+		//Make Triangle w/ points + set attributes
+		Double[] triPoints = new Double[6];
+		triPoints[0] = (l2x)+endX;
+		triPoints[1] = (l2y)+endY;
+		triPoints[2] = -(l2x)+endX;
+		triPoints[3] = -(l2y)+endY;
+		triPoints[4] = (l4x)+endX;
+		triPoints[5] = (l4y)+endY;
+		
+		pHead.getPoints().setAll(triPoints);
 	}
 	
 	
