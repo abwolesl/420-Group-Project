@@ -46,7 +46,7 @@ public class ClassBox {
 	 * @param width Width of this ClassBox.
 	 * @param height Height of this ClassBox.
 	 */
-	public ClassBox(double startX, double startY, double width, double height){
+	public ClassBox(double startX, double startY, double width, double height, String Top, String Mid, String Bot){
 		
 		this.startX = startX;
 		this.startY = startY;
@@ -60,6 +60,9 @@ public class ClassBox {
 		
 		updateBoxes(this.startX, this.startY, this.width, height);
 		updateTextAreas(this.startX, this.startY, this.width, height);
+		tTop.appendText(Top);
+		tMid.appendText(Mid);
+		tBot.appendText(Bot);
 		
 		updatedragArea();
 		updateResizeArea();
@@ -170,7 +173,8 @@ public class ClassBox {
 		// Each section of box is a third.
 		double ythird = height / 3.0;
 		if (tTop == null) {
-			tTop = new TextArea(); 
+			tTop = new TextArea();
+			tTop.appendText("NAME");
 		}
 		tTop.setLayoutX(startX + 1);
 		tTop.setLayoutY(startY + 1);
@@ -178,7 +182,8 @@ public class ClassBox {
 		tTop.setPrefWidth(width - 2);
 		
 		if (tMid == null) {
-			tMid = new TextArea(); 
+			tMid = new TextArea();
+			tMid.appendText("ATTRIBUTES");
 		}
 		tMid.setLayoutX(startX + 1);
 		tMid.setLayoutY(startY + ythird + 1);
@@ -187,6 +192,7 @@ public class ClassBox {
 
 		if (tBot == null) {
 			tBot = new TextArea(); 
+			tBot.appendText("OPERATIONS");
 		}
 		tBot.setLayoutX(startX + 1);
 		tBot.setLayoutY(startY + 2 * ythird + 1);

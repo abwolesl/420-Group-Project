@@ -576,7 +576,10 @@ public class UML extends Application {
 			double startY = Double.parseDouble(parts[2]);
 			double width = Double.parseDouble(parts[3]);
 			double height = Double.parseDouble(parts[4]);
-			ClassBox cBox = new ClassBox(startX, startY, width, height);
+			String tTop = parts[5];
+			String tMid = parts[6];
+			String tBot = parts[7];
+			ClassBox cBox = new ClassBox(startX, startY, width, height, tTop, tMid, tBot);
 			cBox.drawMe(group);
 
 		}else if (parts[0].equals("Relationship")) {
