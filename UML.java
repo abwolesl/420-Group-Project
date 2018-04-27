@@ -1,29 +1,38 @@
 /**
  * @author SWETR
- * @Version 2.2
+ * @Version 3. something -- This has the grid
  * @since April 2018
  */
 
-import java.util.ArrayList;
 import javafx.application.Application;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Polyline;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
 
 
 public class UML extends Application {
@@ -53,7 +62,12 @@ public class UML extends Application {
 	
 	TextArea newTextField = null;
 	
+	GridPane grid;
+	
 	static Group group;
+	
+	// scroll pane
+	ScrollPane sp = new ScrollPane();
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -66,7 +80,13 @@ public class UML extends Application {
 	public void start(Stage UMLStage) {
 		group = new Group();
 		UMLStage.setTitle("SWETR UML Diagram Application");
+		// image courtesy of google
+		// image source: https://thenounproject.com/term/sweater/
+		UMLStage.getIcons().add(new Image("swetr_icon.png"));
+		
 		Scene UMLScene = new Scene(group, screenWidth*.99, screenHeight*.95); // dimensions can be changed
+		
+		UMLScene.getStylesheets().add("stylesheet.css");
 
 		UMLStage.setScene(UMLScene);
 		UMLStage.show();
@@ -81,32 +101,41 @@ public class UML extends Application {
 	//UMLScene is the container for the Group.
 	//group contains all of the JavaFX elements such as Buttons and shapes. 
 	private void createUMLOptions(Stage UMLStage, Scene UMLScene, Group group) {
+		drawingBox = new VBox();
+		// hexadecimal for light gray
+		drawingBox.setStyle("-fx-background-color: #D3D3D3;");
+		drawingBox.prefWidthProperty().bind(UMLStage.widthProperty().multiply(0.915));
+		drawingBox.prefHeightProperty().bind(UMLStage.heightProperty().multiply(0.923));
+
+		drawingBox.setTranslateY(screenHeight*.04);
+		drawingBox.setTranslateX(screenWidth*.08);
+		drawingBox.autosize();
+		
+		grid = createGrid();
+		grid.setGridLinesVisible(true);
+		grid.setStyle("-fx-background-color: #D3D3D3;");
+		grid.setPrefWidth(100);
+		grid.setPrefHeight(800);
+		grid.setOpacity(.5);
+		
 		// creates vertical box to make formatting easier
 		VBox optionsVBox = new VBox(10);
 
 		// maybe look up if there is an align left function. Would be more
 		// understandable
-		optionsVBox.setTranslateY(UMLStage.getHeight()*.05); // shift vbox down slightly
-		optionsVBox.setTranslateX(UMLStage.getWidth()*.005); // shift vbox over to the left so under top row of buttons
+		optionsVBox.setTranslateY(drawingBox.getTranslateY()); // shift vbox down slightly
+		optionsVBox.setTranslateX(UMLStage.getWidth()*.0005); // shift vbox over to the left so under top row of buttons
 		optionsVBox.setMaxSize(30, 100);
+		optionsVBox.setPadding(new Insets(0));
 		
 		HBox buttonsHBox = new HBox(10);
-		buttonsHBox.setPadding(new Insets(10)); // sets padding between nodes (so buttons)
+		//buttonsHBox.setPadding(new Insets(10)); // sets padding between nodes (so buttons)
 		buttonsHBox.setTranslateY(screenHeight*.001);
-		buttonsHBox.setTranslateX(screenWidth*.10);
+		buttonsHBox.setTranslateX(drawingBox.getTranslateX());
 
 		createUMLButtons(optionsVBox, UMLScene, group);
 		createTopButtons(buttonsHBox, UMLStage);
 
-		drawingBox = new VBox();
-		// hexadecimal for light gray
-		drawingBox.setStyle("-fx-background-color: #D3D3D3;");
-		drawingBox.prefWidthProperty().bind(UMLStage.widthProperty().multiply(0.88));
-		drawingBox.prefHeightProperty().bind(UMLStage.heightProperty().multiply(0.85));
-
-		drawingBox.setTranslateY(screenHeight*.10);
-		drawingBox.setTranslateX(screenWidth*.10);
-		drawingBox.autosize();
 
 		//buttonsHBox.getChildren().addAll(drawingBox);
 		group.getChildren().addAll(buttonsHBox,optionsVBox,drawingBox);
@@ -123,6 +152,11 @@ public class UML extends Application {
 		Button generalization = new Button("Generalization");
 		Button dependency = new Button("Dependency");
 		
+		aggregation.setPrefWidth(110);
+		composition.setPrefWidth(110);
+		generalization.setPrefWidth(110);
+		dependency.setPrefWidth(110);
+		
 		Button[] buttons = new Button[4];
 		buttons[0] = aggregation;
 		buttons[1] = composition;
@@ -135,16 +169,13 @@ public class UML extends Application {
 				setUserClicked(true);
 				String option = b.getText();
 				Relationship newRelationship = new Relationship(UMLScene, group, option);
-				//newRelationship.setScene(UMLScene, group);
-				// Relation.getRelationship() returns the relationship
-				// then draw it doing
-				// group.getChildren().add(relationship);
 			});
 		}
 
 		// class box
 		Button classBox = new Button();
 		classBox.setText("Class Box");
+		classBox.setPrefWidth(110);
 		
 		// maybe should generalize this more
 		optionsVBox.setMinWidth(110);
@@ -156,56 +187,47 @@ public class UML extends Application {
 		
 		// add text or note
 		Button addText = new Button("Add Text");
+		addText.setPrefWidth(110);
 
 		// Handle event
 		addText.setOnAction((event) -> {
 			setUserClicked(true);
-			//drawTextField(UMLScene, group);
 			new TextBox().drawMe(group);
 		});
 		
-		Button delete = new Button("Delete");
+		Button clearAll = new Button("Clear All");
+		clearAll.setPrefWidth(110);
 		
-		delete.setOnAction((event) -> {
-			
-			//ClassBox.removeClassBox();
-			ClassBox.listenForDeletion(group);
-			
-			/*
-			ArrayList<Node> nodes = new ArrayList<Node>();
-			nodes = getAllNodes(group);
-			for (Node node : nodes ) {
-				node.setOnMouseClicked((eventClicked) -> {
-					group.getChildren().remove(node);
-				});
-			}
-			*/
+		// Handle event
+		clearAll.setOnAction((event) -> {
+			setUserClicked(true);
+			createClearWarning();
 		});
 		
-		optionsVBox.getChildren().addAll(classBox, aggregation, composition, generalization, dependency, addText, delete);
-	}
-	
-	// get all nodes of parent (in our case, group)
-	// JavaFX is hierarchical, so able to get all children (nodes)
-	// of the group
-	private static ArrayList<Node> getAllNodes(Parent root) {
-	    ArrayList<Node> nodes = new ArrayList<Node>();
-	    addAllDescendents(root, nodes);
-	    return nodes;
-	}
-
-	//Effectively adds all notes of a root node to nodes ArrayList.
-	//Adds all children of specific parent to nodes ArrayList. 
-	//Recursively calls self in case that a child is also a parent.
-	//parent is the root node.
-	//nodes is the ArrayList of nodes that houses all child nodes. 
-	private static void addAllDescendents(Parent parent, ArrayList<Node> nodes) {
-	    for (Node node : parent.getChildrenUnmodifiable()) {
-	        nodes.add(node);
-	        if (node instanceof Parent) {
-	            addAllDescendents((Parent)node, nodes);
-	        }
-	    }
+		Button showGridButton = new Button("Show Grid");
+		showGridButton.setPrefWidth(110);
+		
+		Button removeGridButton = new Button("Remove Grid");
+		removeGridButton.setPrefWidth(110);
+		
+		// Handle event
+		showGridButton.setOnAction((event) -> {
+			setUserClicked(true);
+			// show grid
+			drawingBox.getChildren().add(grid);
+			optionsVBox.getChildren().remove(showGridButton);
+			optionsVBox.getChildren().add(removeGridButton);
+		});
+		
+		removeGridButton.setOnAction((event) -> {
+			setUserClicked(true);
+			// remove grid
+			drawingBox.getChildren().remove(grid);
+			optionsVBox.getChildren().remove(removeGridButton);
+			optionsVBox.getChildren().add(showGridButton);
+		});
+		
+		optionsVBox.getChildren().addAll(classBox, aggregation, composition, generalization, dependency, addText, clearAll, showGridButton);
 	}
 
 	// Creates new, save, exit, help buttons.
@@ -220,7 +242,7 @@ public class UML extends Application {
 		saveButton.setText("Save");
 
 		Button openExistingUMLButton = new Button();
-		openExistingUMLButton.setText("Open Existing UML Diagram");
+		openExistingUMLButton.setText("Open");
 
 		Button exitButton = new Button();
 		exitButton.setText("Exit");
@@ -280,6 +302,7 @@ public class UML extends Application {
 	private void createHelpStage() {
 		Stage helpStage = new Stage();
 		helpStage.setTitle("SWETR's UML Diagram Creation Application");
+		helpStage.getIcons().add(new Image("swetr_icon.png"));
 
 		Text welcomeToSWETR = new Text();
 		welcomeToSWETR.setText("Welcome to SWETR's UML Diagram Creation Application \n\n");
@@ -326,8 +349,10 @@ public class UML extends Application {
 	private void createNewDiagram() {
 		Stage UMLStage = new Stage();
 		UMLStage.setTitle("New UML Diagram");
+		UMLStage.getIcons().add(new Image("swetr_icon.png"));
 		Group group = new Group();
-		Scene UMLScene = new Scene(group, 1400, 700);
+		Scene UMLScene = new Scene(group, screenWidth*.99, screenHeight*.95);
+		UMLScene.getStylesheets().add("stylesheet.css");
 		UMLStage.setScene(UMLScene); // dimensions can be changed
 		UMLStage.show();
 
@@ -337,6 +362,8 @@ public class UML extends Application {
 	// Creates and presents new window to user to confirm that they want to exit program.
 	private void createExitWarning(Stage UMLStage) {
 		Stage exitWarningStage = new Stage();
+		exitWarningStage.setTitle("Exit Warning!");
+		exitWarningStage.getIcons().add(new Image("swetr_icon.png"));
 		StackPane exitRoot = new StackPane();
 
 		exitWarningStage.setScene(new Scene(exitRoot, 400, 300)); // dimensions can be changed
@@ -350,8 +377,8 @@ public class UML extends Application {
 		HBox buttonHBox = new HBox();
 		buttonHBox.setSpacing(20);
 		// shifts hbox to bottom of message screen
-		buttonHBox.setTranslateX(70);
-		buttonHBox.setTranslateY(260);
+		buttonHBox.setAlignment(Pos.BOTTOM_CENTER);
+		buttonHBox.setPadding(new Insets(5));
 
 		Button cancelButton = new Button();
 		cancelButton.setText("Cancel");
@@ -386,46 +413,109 @@ public class UML extends Application {
 		// maybe add save button to message
 	}
 	
-	//Creates and draws a TextArea for the user.
-	private void drawTextField(Scene UMLScene, Group group) {
+	private void createClearWarning() {
+		Stage exitWarningStage = new Stage();
+		exitWarningStage.setTitle("Clear All Warning!");
+		exitWarningStage.getIcons().add(new Image("swetr_icon.png"));
+		StackPane exitRoot = new StackPane();
 
-		UMLScene.setOnMousePressed((MouseEvent event) -> {
-			if (getUserClicked()) {
-				if (isTextFieldBeingDrawn == false) {
-	
-					newTextField = new TextArea();
-					newTextField.isResizable();
-					newTextField.setMinSize(150, 100);
-					newTextField.setWrapText(true);
-					newTextField.setPrefSize(50, 50);
-					startingPointX = event.getSceneX();
-					startingPointY = event.getSceneY();
-	
-					if (startingPointX > 160 && startingPointX < 1390 && startingPointY > 61 && startingPointY < 690) {
-	
-						newTextField.setTranslateX(startingPointX);
-						newTextField.setTranslateY(startingPointY);
-	
-						// Changes background color (light gray) and border (black)
-						newTextField.setStyle("-fx-background-color: #D3D3D3; -fx-border-color: #000000;");
-	
-						group.getChildren().add(newTextField);
-	
-						isTextFieldBeingDrawn = true;
-					}
-				}
+		exitWarningStage.setScene(new Scene(exitRoot, 400, 300)); // dimensions can be changed
+		exitWarningStage.show();
+
+		Text warningMessage = new Text();
+		// should eventually change this styling with CSS
+		warningMessage.setText(
+				"\t \t \t WARNING! \n \n You are about to clear the UML diagram! \n Are you sure you want to clear all?");
+
+		HBox buttonHBox = new HBox();
+		buttonHBox.setSpacing(20);
+		// shifts hbox to bottom of message screen
+		buttonHBox.setAlignment(Pos.BOTTOM_CENTER);
+		buttonHBox.setPadding(new Insets(5));
+
+		Button cancelButton = new Button();
+		cancelButton.setText("Cancel");
+
+		Button yesButton = new Button();
+		yesButton.setText("Yes");
+
+		// close exit warning screen, not application
+		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				exitWarningStage.close();
 			}
 		});
 
-		UMLScene.setOnMouseReleased((MouseEvent event) -> {
-			if (isTextFieldBeingDrawn == true) {
-				//newTextField = null;
-				isTextFieldBeingDrawn = false;
-				setUserClicked(false);
+		// close exit warning screen AND application
+		yesButton.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				group.getChildren().removeIf(n -> n instanceof Rectangle);
+				group.getChildren().removeIf(n -> n instanceof TextArea);
+				group.getChildren().removeIf(n -> n instanceof Line);
+				group.getChildren().removeIf(n -> n instanceof Polygon);
+				group.getChildren().removeIf(n -> n instanceof Polyline);
+				exitWarningStage.close();
 			}
 		});
+
+		// add buttons to hbox
+		buttonHBox.getChildren().addAll(cancelButton, yesButton);
+		// add hbox and message to the warning screen
+		exitRoot.getChildren().addAll(warningMessage, buttonHBox);
 	}
 	
+	/**
+	 * @return 
+	 */
+    private StackPane createCell(BooleanProperty cellSwitch) {
+
+        StackPane cell = new StackPane();
+        return cell;
+    }
+
+	/**
+	 * @return 
+	 * Citation: Code to create grid was modified from a stack overflow post
+	 * URL: https://stackoverflow.com/questions/37619867/how-to-make-gridpanes-lines-visible
+	 */
+    private GridPane createGrid() {
+    	
+        int numCols = 40 ;
+        int numRows = 30 ;
+
+        BooleanProperty[][] switches = new BooleanProperty[numCols][numRows];
+        for (int x = 0 ; x < numCols ; x++) {
+            for (int y = 0 ; y < numRows ; y++) {
+                switches[x][y] = new SimpleBooleanProperty();
+            }
+        }
+
+        GridPane grid = new GridPane();
+
+        for (int x = 0 ; x < numCols ; x++) {
+            ColumnConstraints cc = new ColumnConstraints();
+            cc.setHgrow(Priority.ALWAYS);
+            grid.getColumnConstraints().add(cc);
+        }
+
+        for (int y = 0 ; y < numRows ; y++) {
+            RowConstraints rc = new RowConstraints();
+            rc.setVgrow(Priority.ALWAYS);
+            grid.getRowConstraints().add(rc);
+        }
+
+        for (int x = 0 ; x < numCols ; x++) {
+            for (int y = 0 ; y < numRows ; y++) {
+                grid.add(createCell(switches[x][y]), x, y);
+            }
+        }
+        
+        return grid;
+    }
 
 	/**Sets the value, {@link userClicked} to passed in boolean value.
 	 * @param b Boolean value to set <code>userClicked</code> to.

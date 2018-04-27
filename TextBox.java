@@ -7,34 +7,39 @@ import javafx.scene.Group;
 public class TextBox {
 
 	private double startX, startY;
-	private static double width;
-	private static double height;
+	private double width;
+	private double height;
 
 	// Rectangle area where user can click & drag to move this Class Box.
-	private static Rectangle dragArea;
+	private Rectangle dragArea;
 
-	// TextArea parts of ClassBox
-	private static TextArea textArea;
+	// TextArea
+	private TextArea textBox;
 
 	// Rectangle area where user can click & drag to resize this Class Box.
-	private static Rectangle resizeArea;
+	private Rectangle resizeArea;
+
+	// Rectangle area where user can click to remove the Class Box.
+	private Rectangle deleteArea;
 
 	/**
-	 * ClassBox Constructor. Initializes all parts including dragArea and resizeArea
+	 * ClassBox Constructor. Initializes all parts including dragArea, resizeArea, and deleteArea
 	 * & draws class box.
 	 */
 	public TextBox() {
 
-		this.startX = 300;
-		this.startY = 200;
-		this.width = 130;
-		this.height = 100;
+		startX = 300;
+		startY = 300;
+		width = 100;
+		height = 100;
 
-		updatedragArea();
+		updateDragArea();
 		updateResizeArea();
-		updateBoxes(startX, startY, width, height);
+		updateDeleteArea();
+		updateBox(startX, startY, width, height);
 		makeResizable();
 		makeDraggable();
+		makeDeletable();
 	}
 
 	/**
@@ -50,22 +55,26 @@ public class TextBox {
 	 *            Height of this ClassBox.
 	 */
 	public TextBox(double startX, double startY, double width, double height) {
+		
+		System.out.println("second ctor is used");
 
 		this.startX = startX;
 		this.startY = startY;
 		this.width = width;
 		this.height = height;
 
-		this.dragArea = new Rectangle(startX, startY, width, height);
+		dragArea = new Rectangle(startX, startY, width, height);
 		dragArea.setStrokeWidth(2);
-		// dragArea.setStroke(Color.RED);
 		dragArea.setFill(Color.TRANSPARENT);
 
-		updateBoxes(this.startX, this.startY, this.width, height);
-		updatedragArea();
+		updateBox(this.startX, this.startY, this.width, this.height);
+
+		updateDragArea();
 		updateResizeArea();
+		updateDeleteArea();
 		makeResizable();
 		makeDraggable();
+		makeDeletable();
 	}
 
 	// Method to update Rectangles within ClassBox.
@@ -86,7 +95,7 @@ public class TextBox {
 	 * @param height
 	 *            Height value to make new height of this ClassBox.
 	 */
-	public void updateBoxes(double startX, double startY, double width, double height) {
+	public void updateBox(double startX, double startY, double width, double height) {
 
 		this.startX = startX;
 		this.startY = startY;
@@ -102,22 +111,33 @@ public class TextBox {
 			this.startY = startY - height;
 		}
 
-		// Set Min height + width
+		// Setting min and max dimensions is just a design choice so user can't draw
+		// a text box to take up the entire drawing scene.
+		// This could be changed later.
+		
+		// Set min height and width
 		if (height < 100) {
 			this.height = 100;
 		}
-		if (width < 130) {
-			this.width = 130;
+		if (width < 100) {
+			this.width = 100;
+		}
+		
+		// Set max height and width
+		if (height > 170) {
+			this.height = 170;
+		}
+		if (width > 200) {
+			this.width = 200;
 		}
 
-		if (textArea == null) {
-			textArea = new TextArea();
-			// textArea.setMinSize(100, 50);
-			textArea.setWrapText(true);
-			textArea.setPrefSize(width, height);
-			textArea.setTranslateX(startX);
-			textArea.setTranslateY(startY);
+		if (textBox == null) {
+			textBox = new TextArea();
 		}
+		textBox.setTranslateX(this.startX);
+		textBox.setTranslateY(this.startY);
+		textBox.setMaxWidth(this.width);
+		textBox.setMaxHeight(this.height);
 	}
 
 	// Draws the ClassBox inside the group.
@@ -129,10 +149,7 @@ public class TextBox {
 	 *            The Group in which this ClassBox is placed.
 	 */
 	public void drawMe(Group g) {
-		g.getChildren().addAll(dragArea, resizeArea, textArea);
-		// g.getChildren().addAll(rTop, rMid, rBot, tTop, tMid, tBot);
-		// dragArea.setVisible(false);
-		// resizeArea.setVisible(false);
+		g.getChildren().addAll(dragArea, resizeArea, deleteArea, textBox);
 		UML.setUserClicked(false);
 	}
 
@@ -143,7 +160,7 @@ public class TextBox {
 	 * @return This ClassBox's startX field.
 	 */
 	public double getStartX() {
-		return this.startX;
+		return startX;
 	}
 
 	// Getter Y value of Top left coordinate
@@ -153,19 +170,19 @@ public class TextBox {
 	 * @return This ClassBox's startY field.
 	 */
 	public double getStartY() {
-		return this.startY;
+		return startY;
 	}
 
 	// Helper function for makeDraggable
 	private void setStartX(double x) {
-		this.startX = x;
-		updateBoxes(x, startY, width, height);
+		startX = x;
+		updateBox(x, startY, width, height);
 	}
 
 	// Helper function for makeDraggable
 	private void setStartY(double y) {
-		this.startY = y;
-		updateBoxes(startX, y, width, height);
+		startY = y;
+		updateBox(startX, y, width, height);
 	}
 
 	// Helper function for makeResizable
@@ -177,14 +194,14 @@ public class TextBox {
 
 		// logic to "reverse" box to proper orientation if necessary
 		if (width < -1) {
-			this.width = -width;
-			this.startX = startX - width;
+			width = -width;
+			startX = startX - width;
 		}
-		if (width < 130) {
-			this.width = 130;
+		if (width < 100) {
+			width = 100;
 		}
 
-		updateBoxes(startX, startY, width, height);
+		updateBox(startX, startY, width, height);
 	}
 
 	// Helper function for makeResizable
@@ -199,60 +216,87 @@ public class TextBox {
 			height = -height;
 			startY = startY - height;
 		}
-		if (height < 120) {
-			height = 130;
+		if (height < 100) {
+			height = 100;
 		}
 
-		updateBoxes(startX, startY, width, height);
+		updateBox(startX, startY, width, height);
 	}
 
 	// Creates mouse listener for dragArea (Red outline around ClassBox)
 	private void makeDraggable() {
-		this.dragArea.setOnMouseDragged(eventDragged -> {
+		dragArea.setOnMouseDragged(eventDragged -> {
 			dragArea.setStroke(Color.RED);
 			resizeArea.setFill(Color.GREEN);
-			this.setStartX(checkBoundsX(eventDragged.getSceneX(), dragArea));
-			this.setStartY(checkBoundsY(eventDragged.getSceneY(), dragArea));
-			updatedragArea();
+			deleteArea.setFill(Color.RED);
+			setStartX(checkBoundsX(eventDragged.getSceneX(), dragArea));
+			setStartY(checkBoundsY(eventDragged.getSceneY(), dragArea));
+			updateDragArea();
 			updateResizeArea();
+			updateDeleteArea();
 			eventDragged.consume();
 		});
 	}
 
-	// Creates mouse listener for resizeArea (Green square at bottom right)
+	// Creates mouse listener for resizeArea (Green square at bottom right corner of drag area)
 	private void makeResizable() {
-		this.resizeArea.setOnMouseDragged(eventDragged -> {
+		resizeArea.setOnMouseDragged(eventDragged -> {
 			dragArea.setStroke(Color.RED);
 			resizeArea.setFill(Color.GREEN);
-			this.setEndX(checkBoundsX(eventDragged.getSceneX(), resizeArea));
-			this.setEndY(checkBoundsY(eventDragged.getSceneY(), resizeArea));
-			updatedragArea();
+			deleteArea.setFill(Color.RED);
+			setEndX(checkBoundsX(eventDragged.getSceneX(), resizeArea));
+			setEndY(checkBoundsY(eventDragged.getSceneY(), resizeArea));
+			updateDragArea();
 			updateResizeArea();
+			updateDeleteArea();
+			
 			eventDragged.consume();
+		});
+	}
+
+	// Creates mouse listener for deleteArea (Red square at top left corner of drag area)
+	private void makeDeletable() {
+		this.deleteArea.setOnMouseClicked(event -> {
+			removeClassBox();
+			deleteArea.setVisible(false);
+			event.consume();
 		});
 	}
 
 	// Updates resizeArea to match ClassBox location.
 	private void updateResizeArea() {
 		if (resizeArea == null) {
-			this.resizeArea = new Rectangle(startX + width, startY + height, 7.5, 7.5);
-			resizeArea.setFill(Color.GREEN);
+			resizeArea = new Rectangle(startX + width, startY + height, 7.5, 7.5);
+			resizeArea.setFill(Color.TRANSPARENT);
 			resizeArea.setOpacity(50);
 		}
-		resizeArea.setX(startX + width);
-		resizeArea.setY(startY + height);
+		
+		resizeArea.setX(startX + (dragArea.getWidth() - 15));
+		resizeArea.setY(startY + (dragArea.getHeight() - 15));
+	}
+
+	// Updates deleteArea to match ClassBox location.
+	private void updateDeleteArea() {
+		if (deleteArea == null) {
+			deleteArea = new Rectangle(startX - 7, startY - 7, 7.5, 7.5);
+			deleteArea.setFill(Color.TRANSPARENT);
+			deleteArea.setOpacity(50);
+		}
+		deleteArea.setX(startX - 7);
+		deleteArea.setY(startY - 7);
 	}
 
 	// Updates dragArea to match ClassBox location.
-	private void updatedragArea() {
-		if (this.dragArea == null) {
-			this.dragArea = new Rectangle(startX - 7.5, startY - 7.5, width + 15, height + 15);
-			dragArea.setStroke(Color.RED);
+	private void updateDragArea() {
+		if (dragArea == null) {
+			dragArea = new Rectangle(startX - 7.5, startY - 7.5, width + 15, height + 15);
+			dragArea.setStroke(Color.TRANSPARENT);
 			dragArea.setFill(Color.TRANSPARENT);
 			dragToggle();
 		}
 		dragArea.setX(this.startX - 7.5);
 		dragArea.setY(this.startY - 7.5);
+		
 		dragArea.setHeight(this.height + 15);
 		dragArea.setWidth(this.width + 15);
 	}
@@ -302,20 +346,24 @@ public class TextBox {
 	// Setting .isVisible(false) doesn't allow setOnMouseEntered to activate, I
 	// think the object isn't there anymore.
 	private void dragToggle() {
-		this.dragArea.setOnMouseExited(eventExited -> {
+
+		dragArea.setOnMouseExited(eventExited -> {
 			resizeArea.setFill(Color.TRANSPARENT);
 			dragArea.setStroke(Color.TRANSPARENT);
+			deleteArea.setFill(Color.TRANSPARENT);
 
 			// Moving from dragArea to resizeArea to keep both visible
-			this.resizeArea.setOnMouseEntered(eventEntered -> {
+			resizeArea.setOnMouseEntered(eventEntered -> {
 				resizeArea.setFill(Color.GREEN);
 				dragArea.setStroke(Color.RED);
+				deleteArea.setFill(Color.RED);
 			});
 		});
 
-		this.dragArea.setOnMouseEntered(eventEntered -> {
+		dragArea.setOnMouseEntered(eventEntered -> {
 			resizeArea.setFill(Color.GREEN);
 			dragArea.setStroke(Color.RED);
+			deleteArea.setFill(Color.RED);
 		});
 	}
 
@@ -324,7 +372,7 @@ public class TextBox {
 	 * 
 	 * @return height This ClassBox's height.
 	 */
-	public static double getHeight() {
+	public double getHeight() {
 		return height;
 	}
 
@@ -333,7 +381,7 @@ public class TextBox {
 	 * 
 	 * @return width This ClassBox's height.
 	 */
-	public static double getWidth() {
+	public double getWidth() {
 		return width;
 	}
 
@@ -346,5 +394,10 @@ public class TextBox {
 	 */
 	public static String getText(TextArea t) {
 		return t.getText();
+	}
+
+	public void removeClassBox() {
+		Group group = UML.getGroup();
+		group.getChildren().removeAll(dragArea, resizeArea, textBox);
 	}
 }
