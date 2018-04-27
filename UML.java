@@ -114,8 +114,8 @@ public class UML extends Application {
 		grid = createGrid();
 		grid.setGridLinesVisible(true);
 		grid.setStyle("-fx-background-color: #D3D3D3;");
-		grid.setPrefWidth(100);
-		grid.setPrefHeight(800);
+		grid.setPrefWidth(drawingBox.getWidth());
+		grid.setPrefHeight(drawingBox.getHeight());
 		grid.setOpacity(.5);
 		
 		// creates vertical box to make formatting easier
