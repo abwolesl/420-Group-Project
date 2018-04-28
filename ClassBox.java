@@ -46,6 +46,7 @@ public class ClassBox {
 		makeResizable();
 		makeDraggable();
 		makeDeletable();
+		resizeInternals();
 
 	}
 
@@ -81,6 +82,7 @@ public class ClassBox {
 		makeResizable();
 		makeDraggable();
 		makeDeletable();
+		resizeInternals();
 	}
 
 	// Method to update Rectangles within ClassBox.
@@ -136,7 +138,7 @@ public class ClassBox {
 		rTop.setX(this.startX);
 		rTop.setY(this.startY);
 		rTop.setWidth(this.width);
-		rTop.setHeight(ythird);
+		rTop.setHeight(40);
 
 		if (rMid == null) {
 			rMid = new Rectangle(this.startX, this.startY + ythird, this.width, ythird);
@@ -145,9 +147,9 @@ public class ClassBox {
 			rMid.setStrokeWidth(2);
 		}
 		rMid.setX(this.startX);
-		rMid.setY(this.startY + ythird);
+		rMid.setY(this.startY + 40);
 		rMid.setWidth(this.width);
-		rMid.setHeight(ythird);
+		rMid.setHeight((this.height - 40) / 2);
 
 		if (rBot == null) {
 			rBot = new Rectangle(this.startX, this.startY + 2 * ythird, this.width, ythird);
@@ -156,9 +158,9 @@ public class ClassBox {
 			rBot.setStrokeWidth(2);
 		}
 		rBot.setX(this.startX);
-		rBot.setY(this.startY + 2 * ythird);
+		rBot.setY(rMid.getY() + rMid.getHeight());
 		rBot.setWidth(this.width);
-		rBot.setHeight(ythird);
+		rBot.setHeight(rMid.getHeight());
 	}
 
 	// Method to update TextAreas within ClassBox.
@@ -204,23 +206,23 @@ public class ClassBox {
 		}
 		tTop.setLayoutX(startX + 1);
 		tTop.setLayoutY(startY + 1);
-		tTop.setPrefHeight(ythird - 2);
+		tTop.setPrefHeight(40 - 2);
 		tTop.setPrefWidth(width - 2);
 
 		if (tMid == null) {
 			tMid = new TextArea();
 		}
 		tMid.setLayoutX(startX + 1);
-		tMid.setLayoutY(startY + ythird + 1);
-		tMid.setPrefHeight(ythird - 2);
+		tMid.setLayoutY(rMid.getY() + 1);
+		tMid.setPrefHeight(rMid.getHeight() - 2);
 		tMid.setPrefWidth(width - 2);
 
 		if (tBot == null) {
 			tBot = new TextArea();
 		}
 		tBot.setLayoutX(startX + 1);
-		tBot.setLayoutY(startY + 2 * ythird + 1);
-		tBot.setPrefHeight(ythird - 2);
+		tBot.setLayoutY(rBot.getY() + 1);
+		tBot.setPrefHeight(rBot.getHeight() - 2);
 		tBot.setPrefWidth(width - 2);
 	}
 
@@ -361,7 +363,7 @@ public class ClassBox {
 		} else {
 			resizeArea.setFill(Color.GREEN);
 		}
-		
+
 		resizeArea.setX(startX + width);
 		resizeArea.setY(startY + height);
 	}
@@ -375,7 +377,7 @@ public class ClassBox {
 		} else {
 			deleteArea.setFill(Color.RED);
 		}
-		
+
 		deleteArea.setX(startX - 7);
 		deleteArea.setY(startY - 7);
 	}
@@ -452,7 +454,7 @@ public class ClassBox {
 				deleteArea.setFill(Color.RED);
 				dragArea.setStroke(Color.RED);
 			});
-			
+
 			// Moving from dragArea to resizeArea to keep both visible
 			deleteArea.setOnMouseEntered(eventEntered -> {
 				resizeArea.setFill(Color.GREEN);
@@ -500,5 +502,17 @@ public class ClassBox {
 	private void removeClassBox() {
 		Group group = UML.getGroup();
 		group.getChildren().removeAll(dragArea, resizeArea, rTop, rMid, rBot, tTop, tMid, tBot);
+	}
+
+	private void resizeInternals() {
+		rBot.setOnMouseDragged(event -> {
+			rBot.setY(event.getSceneY());
+			tBot.setLayoutY(event.getSceneY() + 1);
+			rMid.setHeight(event.getSceneY() - rMid.getY());
+			tMid.setPrefHeight(event.getSceneY() - rMid.getY() - 2);
+			dragArea.setHeight(event.getSceneY() - dragArea.getY() + rBot.getHeight() + 7.5);
+			resizeArea.setY(event.getSceneY() + rBot.getHeight());
+			event.consume();
+		});
 	}
 }
