@@ -30,8 +30,8 @@ public class TextBox {
 
 		startX = 300;
 		startY = 300;
-		width = 100;
-		height = 100;
+		width = 50;
+		height = 50;
 
 		updateDragArea();
 		updateResizeArea();
@@ -116,11 +116,11 @@ public class TextBox {
 		// This could be changed later.
 		
 		// Set min height and width
-		if (height < 100) {
-			this.height = 100;
+		if (height < 50) {
+			this.height = 50;
 		}
-		if (width < 100) {
-			this.width = 100;
+		if (width < 50) {
+			this.width = 50;
 		}
 		
 		// Set max height and width
@@ -197,8 +197,8 @@ public class TextBox {
 			width = -width;
 			startX = startX - width;
 		}
-		if (width < 100) {
-			width = 100;
+		if (width < 50) {
+			width = 50;
 		}
 
 		updateBox(startX, startY, width, height);
@@ -216,8 +216,8 @@ public class TextBox {
 			height = -height;
 			startY = startY - height;
 		}
-		if (height < 100) {
-			height = 100;
+		if (height < 50) {
+			height = 50;
 		}
 
 		updateBox(startX, startY, width, height);
