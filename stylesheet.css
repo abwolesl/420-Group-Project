@@ -1,0 +1,11 @@
+.button { 
+   -fx-background-color: gray; 
+   -fx-text-fill: white; 
+}
+
+
+.outline.label .text {
+    -fx-fill: lightseagreen;
+    -fx-stroke: firebrick;
+    -fx-stroke-width: 2px;
+}
