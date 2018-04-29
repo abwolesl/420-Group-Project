@@ -56,7 +56,7 @@ public class TextBox {
 	 */
 	public TextBox(double startX, double startY, double width, double height) {
 		
-		//System.out.println("second ctor is used");
+		System.out.println("second ctor is used");
 
 		this.startX = startX;
 		this.startY = startY;

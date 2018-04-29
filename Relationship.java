@@ -2,16 +2,14 @@
 import javafx.scene.Group;
 import javafx.scene.shape.Circle;
 import javafx.scene.Scene;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 
-public class Relationship extends Line {
+public class Relationship {
 
 	// X & Y coordinates of where user started and ended drag gesture.
 	private double startingPointX;
@@ -27,7 +25,7 @@ public class Relationship extends Line {
 	public static boolean hideClassBox;
 
 	// String representation of the type of this relationship.
-	private static String relType = "";
+	private String relType = "";
 
 	// Describes X & Y coordinates of the start of this relationship and X & Y
 	// coordinates of the end of this relationship.
@@ -36,13 +34,12 @@ public class Relationship extends Line {
 	private double endXValue;
 	private double endYValue;
 
-	// private Line dragLine;
-
-	private Line line;
-	private Rectangle rHead;
-	private Polygon pHead;
-	private Polyline plHead;
-	private Circle pivot;
+	//Parts of a line
+	private Line line; //Stem
+	private Rectangle rHead; //Aggregation + Composition (rectangle)
+	private Polygon pHead; //Generalization (triangle)
+	private Polyline plHead; //Dependency (arrowhead)
+	private Circle pivot; //Blue circle underneath head.
 
 	/**
 	 * Relationship constructor.
@@ -183,6 +180,7 @@ public class Relationship extends Line {
 		makeNewCircle(startX, startY, endX, endY);
 		makeRotatable();
 		group.getChildren().add(pivot);
+		this.relType = relationshipType;
 
 		switch (relationshipType) {
 		case "Aggregation":
@@ -231,7 +229,7 @@ public class Relationship extends Line {
 	 * @param color
 	 *            Determines aggregation(black) or composition(white)
 	 */
-	private void drawAggregationOrComposition(Group group, double startX, double startY, double endX, double endY,
+	void drawAggregationOrComposition(Group group, double startX, double startY, double endX, double endY,
 			String color) {
 
 		startXValue = startX;
@@ -311,7 +309,7 @@ public class Relationship extends Line {
 	 * @param startY
 	 *            End point Y value to draw this Relationship.
 	 */
-	private void drawGeneralization(Group group, double startX, double startY, double endX, double endY) {
+	void drawGeneralization(Group group, double startX, double startY, double endX, double endY) {
 
 		startXValue = startX;
 		startYValue = startY;
@@ -414,7 +412,7 @@ public class Relationship extends Line {
 	 * @param startY
 	 *            End point Y value to draw this Relationship.
 	 */
-	private void drawDependency(Group group, double startX, double startY, double endX, double endY) {
+	void drawDependency(Group group, double startX, double startY, double endX, double endY) {
 
 		startXValue = startX;
 		startYValue = startY;
@@ -489,7 +487,7 @@ public class Relationship extends Line {
 		});
 
 		makeDraggable();
-		group.getChildren().addAll(line, pHead);
+		group.getChildren().addAll(line, plHead);
 
 		line.setOnMouseEntered(event -> {
 			line.setStroke(Color.INDIANRED);
@@ -498,10 +496,6 @@ public class Relationship extends Line {
 		line.setOnMouseExited(event -> {
 			line.setStroke(Color.BLACK);
 		});
-
-		makeDraggable();
-
-		group.getChildren().addAll(line, plHead);
 
 	}
 
@@ -552,20 +546,18 @@ public class Relationship extends Line {
 		return endYValue;
 	}
 
+	// Adds Listeners to line to enable dragging feature.
 	private void makeDraggable() {
+		// Offset from initial click needed to properly update heads. not 100% sure why.
 		this.line.setOnMouseClicked(eventClicked -> {
 			startingPointX = eventClicked.getSceneX();
 			startingPointY = eventClicked.getSceneY();
 
 		});
-
+		// While dragging update line + head
 		this.line.setOnMouseDragged(eventDragged -> {
-			double deltaX = checkBoundsX(eventDragged.getSceneX()) - startingPointX;
-			double deltaY = checkBoundsY(eventDragged.getSceneY()) - startingPointY;
-
 			double dragX = checkBoundsX(eventDragged.getX());
 			double dragY = checkBoundsY(eventDragged.getY());
-			// System.out.println(dragX);
 			updateRel(dragX, dragY, dragX + (endXValue - startXValue), dragY + (endYValue - startYValue));
 			makeNewCircle(dragX, dragY, dragX + (endXValue - startXValue), dragY + (endYValue - startYValue));
 			eventDragged.consume();
@@ -573,14 +565,12 @@ public class Relationship extends Line {
 			startingPointY = line.getStartY();
 
 			line.setStroke(Color.INDIANRED);
-
-			// e = line.getEndX();
-			// this.endYValue = line.getEndY();
 		});
 
 	}
 
-	private void updateRel(double startX, double startY, double endX, double endY) {
+	// Updates line + calls appropriate method for head.
+	public void updateRel(double startX, double startY, double endX, double endY) {
 
 		double height = endYValue - startYValue;
 		double width = endXValue - startXValue;
@@ -603,11 +593,11 @@ public class Relationship extends Line {
 			l4x = -l4x;
 			l4y = -l4y;
 		}
-
 		line.setStartX(startX);
 		line.setStartY(startY);
 		line.setEndX(endX);
 		line.setEndY(endY);
+
 		// Rectangle Head
 		if (rHead != null) {
 			rHead.setX(endX - 5);
@@ -630,6 +620,7 @@ public class Relationship extends Line {
 
 	}
 
+	// Check against *pushing* line out of drawingBox left/right
 	private double checkBoundsX(double x) {
 		double buffer = 7.5;
 
@@ -655,6 +646,7 @@ public class Relationship extends Line {
 		return x;
 	}
 
+	// Check against *pushing* line out of drawingBox up/down
 	private double checkBoundsY(double y) {
 		double buffer = 7.5;
 		if (endYValue > startYValue) // Down Facing Line
@@ -679,11 +671,10 @@ public class Relationship extends Line {
 		return y;
 	}
 
+	// Updates triangle for Generalization
 	private void updateTriangle(double startX, double startY, double endX, double endY) {
-
 		double height = endY - startY;
 		double width = endX - startX;
-		// System.out.println("width " + width);
 		double slope = height / width;
 
 		// Diving by 0 is bad
@@ -715,7 +706,6 @@ public class Relationship extends Line {
 		triPoints[3] = -(l2y) + endY;
 		triPoints[4] = (l4x) + endX;
 		triPoints[5] = (l4y) + endY;
-		// System.out.println("tri5 " + triPoints[5]);
 
 		pHead.getPoints().setAll(triPoints);
 
@@ -736,6 +726,7 @@ public class Relationship extends Line {
 
 	}
 
+	// Updates arrow head for dependency
 	private void updateArrow(double startX, double startY, double endX, double endY) {
 		double height = endY - startY;
 		double width = endX - startX;
@@ -781,7 +772,6 @@ public class Relationship extends Line {
 		} else if (width < 0) {
 			plHead.setLayoutX(moveX);
 		}
-
 		if (height > 0) {
 			plHead.setLayoutY(-moveY);
 		} else if (height < 0) {
@@ -789,6 +779,7 @@ public class Relationship extends Line {
 		}
 	}
 
+	// Updates rectangle arrowhead for Aggregation/Composition
 	private void updateRect(double startX, double startY, double endX, double endY) {
 
 		double height = endY - startYValue;
@@ -818,6 +809,8 @@ public class Relationship extends Line {
 		}
 	}
 
+	// Really should be called UpdateCircle..
+	// Creates new pivot circle if needed, otherwise just updates.
 	private void makeNewCircle(double startX, double startY, double endX, double endY) {
 		double height = endY - startY;
 		double width = endX - startX;
@@ -850,16 +843,20 @@ public class Relationship extends Line {
 		}
 		this.pivot.setCenterX(endX - l4x);
 		this.pivot.setCenterY(endY - l4y);
-		// System.out.print(pivot.getCenterX());
 
 	}
 
+	// Creates Listener for blue circle (pivot)
 	private void makeRotatable() {
 		pivot.setOnMouseDragged(event -> {
 			pivot.setFill(Color.LIGHTCYAN);
+			// Buffer to the edge of drawingBox, since arrow heads stick out sometimes.
 			double buffer = 7.5;
 			double endX = event.getSceneX();
 			double endY = event.getSceneY();
+
+			// Bounds checking (can't use methods because don't have to worry about length
+			// , just dragging one side.
 			if (event.getSceneX() < UML.drawingBox.getBoundsInParent().getMinX() + buffer) {
 				endX = UML.drawingBox.getBoundsInParent().getMinX() + buffer;
 			} else if (event.getSceneX() > UML.drawingBox.getBoundsInParent().getMaxX() - buffer) {
@@ -884,25 +881,27 @@ public class Relationship extends Line {
 			if (plHead != null) {
 				updateArrow(this.startXValue, this.startYValue, line.getEndX(), line.getEndY());
 			}
+			// Update Circle
 			makeNewCircle(startXValue, startYValue, endXValue, endYValue);
 
 		});
-
+		// Visually hide blue circle when mouse isn't on it.
 		pivot.setOnMouseExited(event -> {
 			pivot.setFill(Color.TRANSPARENT);
 		});
-
+		// Keep blue circle steadily visible while dragging.
 		pivot.setOnMouseEntered(event -> {
 			pivot.setFill(Color.LIGHTCYAN);
 		});
 
 	}
 
+	// Returns String representation of Relationship
+	// "/" == Field delimiter
+	// "~~~~" == Object delimiter for save file
 	public String whereAmI() {
 		return ("Relationship/" + relType + "/" + startXValue + "/" + startYValue + "/" + endXValue + "/" + endYValue
 				+ "~~~~");
 	}
-
-
 
 }

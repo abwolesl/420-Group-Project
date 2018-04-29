@@ -266,7 +266,7 @@ public class UML extends Application {
 
 		// Handle event
 		showGridButton.setOnAction((event) -> {
-			setUserClicked(true);
+			//setUserClicked(true);
 			// show grid
 			drawingBox.getChildren().add(grid);
 			optionsVBox.getChildren().remove(showGridButton);
@@ -274,7 +274,7 @@ public class UML extends Application {
 		});
 
 		removeGridButton.setOnAction((event) -> {
-			setUserClicked(true);
+			//setUserClicked(true);
 			// remove grid
 			drawingBox.getChildren().remove(grid);
 			optionsVBox.getChildren().remove(removeGridButton);
@@ -374,7 +374,6 @@ public class UML extends Application {
 
 								readFile(file,group);
 							} catch (IOException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
@@ -644,6 +643,7 @@ public class UML extends Application {
 		return group;
 	}
 
+	//Opens save dialog and ???
 	private void SaveFile(String content, File file) {
 		try {
 			FileWriter fileWriter = null;
@@ -657,24 +657,25 @@ public class UML extends Application {
 
 	}
 
+	//Reads in save file and breaks into objects
 	private static void readFile(File file, Group group) throws IOException {
 		FileReader in = new FileReader(file);
 		BufferedReader br = new BufferedReader(in);
 		String line;
 		while ((line = br.readLine()) != null) {
 			String[] parts = line.split("~~~~");
-
 			for (int i = 0; i < parts.length; i++) {
 				readString(parts[i], group);
 			}
 		}
-
+		br.close();
 	}
 
+	//Takes object string and parses details
+	//Creates object 
 	private static void readString(String action, Group group) {
 
 		String[] parts = action.split("/");
-		//System.out.println(parts[0]);
 
 		if (parts[0].equals("CLASSBOX")) {
 
@@ -703,8 +704,7 @@ public class UML extends Application {
 			double endX = Double.parseDouble(parts[4]);
 			double endY = Double.parseDouble(parts[5]);
 
-			Relationship rel = new Relationship(group, relType, startX, startY, endX, endY);
-			//group.getChildren().add(rel);
+			new Relationship(group, relType, startX, startY, endX, endY);
 
 		}
 	}

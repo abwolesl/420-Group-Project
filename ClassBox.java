@@ -111,24 +111,25 @@ public class ClassBox {
 		this.width = width;
 		this.height = height;
 
-		if (width < -1) {
-			this.width = -width;
-			this.startX = startX - width;
+		if (this.width < -1) {
+			this.width = -this.width;
+			this.startX = this.startX - this.width;
 		}
-		if (height < -1) {
-			this.height = -height;
-			this.startY = startY - height;
+		if (this.height < -1) {
+			this.height = -this.height;
+			this.startY = this.startY - this.height;
 		}
 
 		// Set Min height + width
-		if (height < 120) {
+		if (this.height < 130) {
 			this.height = 130;
 		}
-		if (width < 130) {
+		if (this.width < 130) {
 			this.width = 130;
 		}
 		// Each section of box is a third.
 		double ythird = this.height / 3.0;
+
 
 		if (rTop == null) {
 			rTop = new Rectangle(this.startX, this.startY, this.width, ythird);
@@ -194,17 +195,16 @@ public class ClassBox {
 		}
 
 		// Set Min height + width
-		if (height < 120) {
+		if (height < 130) {
 			height = 130;
 		}
 		if (width < 130) {
 			width = 130;
 		}
-		// Each section of box is a third.
-		double ythird = height / 3.0;
 		if (tTop == null) {
 			tTop = new TextArea();
 		}
+		
 		tTop.setLayoutX(startX + 1);
 		tTop.setLayoutY(startY + 1);
 		tTop.setPrefHeight(40 - 2);
@@ -258,6 +258,36 @@ public class ClassBox {
 	 */
 	public double getStartY() {
 		return startY;
+	}
+
+	/**
+	 * Returns height of this ClassBox.
+	 * 
+	 * @return height This ClassBox's height.
+	 */
+	public double getHeight() {
+		return height;
+	}
+
+	/**
+	 * Returns width of this ClassBox.
+	 * 
+	 * @return width This ClassBox's height.
+	 */
+	public double getWidth() {
+		return width;
+	}
+
+	public TextArea getTTop() {
+		return this.tTop;
+	}
+
+	public TextArea getTMid() {
+		return this.tMid;
+	}
+
+	public TextArea getTBot() {
+		return this.tBot;
 	}
 
 	// Helper function for makeDraggable
@@ -317,6 +347,7 @@ public class ClassBox {
 	// Creates mouse listener for dragArea (Red outline around ClassBox)
 	private void makeDraggable() {
 		this.dragArea.setOnMouseDragged(eventDragged -> {
+			//Sets colors for boxes
 			dragArea.setStroke(Color.RED);
 			resizeArea.setFill(Color.GREEN);
 			deleteArea.setFill(Color.RED);
@@ -361,7 +392,6 @@ public class ClassBox {
 		});
 
 		deleteArea.setOnMouseDragged(eventDone -> {
-			System.out.print("HELLO");
 			resizeArea.setFill(Color.TRANSPARENT);
 			deleteArea.setFill(Color.TRANSPARENT);
 			dragArea.setStroke(Color.TRANSPARENT);
@@ -369,6 +399,7 @@ public class ClassBox {
 	}
 
 	// Updates resizeArea to match ClassBox location.
+	// Creates new if Class Box is being made.
 	private void updateResizeArea() {
 		if (resizeArea == null) {
 			resizeArea = new Rectangle(startX + width, startY + height, 7.5, 7.5);
@@ -377,12 +408,12 @@ public class ClassBox {
 		} else {
 			resizeArea.setFill(Color.GREEN);
 		}
-
 		resizeArea.setX(startX + width);
 		resizeArea.setY(startY + height);
 	}
 
 	// Updates deleteArea to match ClassBox location.
+	// Creates new if Class Box is being made.
 	private void updateDeleteArea() {
 		if (this.deleteArea == null) {
 			this.deleteArea = new Rectangle(startX - 7, startY - 7, 7.5, 7.5);
@@ -397,6 +428,7 @@ public class ClassBox {
 	}
 
 	// Updates dragArea to match ClassBox location.
+	// Creates new if Class Box is being made.
 	private void updateDragArea() {
 		if (dragArea == null) {
 			dragArea = new Rectangle(startX - 7.5, startY - 7.5, width + 15, height + 15);
@@ -413,8 +445,8 @@ public class ClassBox {
 	}
 
 	// Bounds checking for X parameter for dragging and Resizing.
-	// Logic differentiates between dragging and resizing, since you can drag from
-	// anywhere, but only resize from bottom right.
+	// Logic differentiates between dragging and resizing, since
+	// dragging snaps to top left, but only resize from bottom right.
 	private double checkBoundsX(double x, Rectangle r) {
 		if (x < UML.drawingBox.getBoundsInParent().getMinX() + 7.5) { // left side of gray area
 			x = UML.drawingBox.getBoundsInParent().getMinX() + 7.5;
@@ -433,8 +465,8 @@ public class ClassBox {
 	}
 
 	// Bounds checking for Y parameter for dragging and Resizing.
-	// Logic differentiates between dragging and resizing, since you can drag from
-	// anywhere, but only resize from bottom right.
+	// Logic differentiates between dragging and resizing, since dragging
+	// snaps to top left, but only resize from bottom right.
 	private double checkBoundsY(double y, Rectangle r) {
 		if (y < UML.drawingBox.getBoundsInParent().getMinY() + 7.5) { // top of gray area
 			y = UML.drawingBox.getBoundsInParent().getMinY() + 7.5;
@@ -457,23 +489,21 @@ public class ClassBox {
 	// Setting .isVisible(false) doesn't allow setOnMouseEntered to activate, I
 	// think the object isn't there anymore.
 	private void dragToggle() {
-
+		// Fixed weird bug where if you released while moving fast, aura would persist
 		dragArea.setOnMouseDragReleased(eventDone -> {
-			// System.out.println("HELLO");
 			resizeArea.setFill(Color.TRANSPARENT);
 			deleteArea.setFill(Color.TRANSPARENT);
 			dragArea.setStroke(Color.TRANSPARENT);
 		});
-
+		// Fixed weird bug where if you released while moving fast, aura would persist
+		//^^ not sure if both are necessary
 		dragArea.setOnMouseReleased(eventDone -> {
-			//System.out.println("HELLO");
 			resizeArea.setFill(Color.TRANSPARENT);
 			deleteArea.setFill(Color.TRANSPARENT);
 			dragArea.setStroke(Color.TRANSPARENT);
 		});
-
+		// Visually hides (not to system) when not "active"
 		dragArea.setOnMouseExited(eventExited -> {
-			//System.out.println("hello");
 			resizeArea.setFill(Color.TRANSPARENT);
 			deleteArea.setFill(Color.TRANSPARENT);
 			dragArea.setStroke(Color.TRANSPARENT);
@@ -495,24 +525,8 @@ public class ClassBox {
 
 	}
 
-	/**
-	 * Returns height of this ClassBox.
-	 * 
-	 * @return height This ClassBox's height.
-	 */
-	public double getHeight() {
-		return height;
-	}
-
-	/**
-	 * Returns width of this ClassBox.
-	 * 
-	 * @return width This ClassBox's height.
-	 */
-	public double getWidth() {
-		return width;
-	}
-
+	//Returns String representing ClassBox w/ fields delimited by / 
+	//~~~~ = Object delimiter for save file
 	public String whereAmI() {
 		String tText = "PLACEHOLDER", mText = "PLACEHOLDER", bText = "PLACEHOLDER";
 		if (!tTop.getText().equals("")) {
@@ -535,35 +549,28 @@ public class ClassBox {
 	 *            TextArea to get text from.
 	 * @return String Text value of Textbox.
 	 */
-	public static String getText(TextArea t) {
+	public String getText(TextArea t) {
 		return t.getText();
 	}
 
+	// Effectively deletes class box by removing all components
 	private void removeClassBox() {
 		Group group = UML.getGroup();
 		group.getChildren().removeAll(dragArea, resizeArea, rTop, rMid, rBot, tTop, tMid, tBot);
 	}
 
+	// Hides Aura (+ to system) for when drawing a line
 	public void hideAura() {
 		this.dragArea.setVisible(false);
 		this.resizeArea.setVisible(false);
 		this.deleteArea.setVisible(false);
 	}
 
+	// Shows Aura (+ to system) for after done drawing a line
 	public void showAura() {
 		this.dragArea.setVisible(true);
 		this.resizeArea.setVisible(true);
 		this.deleteArea.setVisible(true);
-		makeDraggable();
 	}
 
-	/*
-	 * private void resizeInternals() { rBot.setOnMouseDragged(event -> {
-	 * rBot.setY(event.getSceneY()); tBot.setLayoutY(event.getSceneY() + 1);
-	 * rMid.setHeight(event.getSceneY() - rMid.getY());
-	 * tMid.setPrefHeight(event.getSceneY() - rMid.getY() - 2);
-	 * dragArea.setHeight(event.getSceneY() - dragArea.getY() + rBot.getHeight() +
-	 * 7.5); resizeArea.setY(event.getSceneY() + rBot.getHeight()); event.consume();
-	 * }); }
-	 */
 }
