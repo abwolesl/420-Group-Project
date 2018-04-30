@@ -7,14 +7,13 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 public class Relationship extends Line {
 	
 	//X & Y coordinates of where user started and ended drag gesture.
 	private double startingPointX;
-private static double startingPointY;
-private static double currentEndingPointX;
-private static double currentEndingPointY;
+	private static double startingPointY;
+	private static double currentEndingPointX;
+	private static double currentEndingPointY;
 
 	//newLine is the guideline that displays while drawing a relationship.
 	private static Line newLine = null;

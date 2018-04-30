@@ -1,5 +1,7 @@
 
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import javafx.scene.control.TextArea;
 import javafx.scene.paint.Color;
 import javafx.scene.Group;
@@ -24,8 +26,6 @@ public class ClassBox {
 
 	// Rectangle area where user can click to remove the Class Box.
 	private Rectangle deleteArea;
-
-	private static boolean isLineBeingDrawn = false;
 
 	/**
 	 * ClassBox Constructor. Initializes all parts including dragArea, resizeArea,
@@ -201,12 +201,19 @@ public class ClassBox {
 		// Each section of box is a third.
 		double ythird = height / 3.0;
 		if (tTop == null) {
-			tTop = new TextArea();
+			tTop = new TextArea("Type Here");
 		}
 		tTop.setLayoutX(startX + 1);
 		tTop.setLayoutY(startY + 1);
 		tTop.setPrefHeight(ythird - 2);
 		tTop.setPrefWidth(width - 2);
+		// Only certain fonts can be bold -- Verdana is one of them
+		tTop.setFont(Font.font ("Verdana", 12)); 
+		// This breaks if it is moved to the css file
+		// because css does not support this, 
+		// but JavaFX does
+		tTop.setStyle("-fx-font-weight: bold;");
+		tTop.setId("top");
 
 		if (tMid == null) {
 			tMid = new TextArea();
@@ -215,6 +222,7 @@ public class ClassBox {
 		tMid.setLayoutY(startY + ythird + 1);
 		tMid.setPrefHeight(ythird - 2);
 		tMid.setPrefWidth(width - 2);
+		tMid.setFont(Font.font ("Verdana", 12));
 
 		if (tBot == null) {
 			tBot = new TextArea();
@@ -223,6 +231,7 @@ public class ClassBox {
 		tBot.setLayoutY(startY + 2 * ythird + 1);
 		tBot.setPrefHeight(ythird - 2);
 		tBot.setPrefWidth(width - 2);
+		tBot.setFont(Font.font ("Verdana", 12));
 	}
 
 	// Draws the ClassBox inside the group.
@@ -432,6 +441,10 @@ public class ClassBox {
 		} else {
 			if (y + this.height > UML.drawingBox.getBoundsInParent().getMaxY() - 7.5) { // right side of gray area
 				y = UML.drawingBox.getBoundsInParent().getMaxY() - 7.5 - this.height;
+				// Because user is trying to draw at bottom, should allow the drawing scene to grow
+				Stage UMLStage = UML.getStage();
+				UMLStage.setResizable(true);
+				UMLStage.setHeight(UMLStage.getHeight() + 100);
 			}
 		}
 
