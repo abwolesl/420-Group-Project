@@ -25,6 +25,8 @@ public class ClassBox {
 	// Rectangle area where user can click to remove the Class Box.
 	private Rectangle deleteArea;
 
+	private static boolean isLineBeingDrawn = false;
+
 	/**
 	 * ClassBox Constructor. Initializes all parts including dragArea, resizeArea,
 	 * and deleteArea & draws class box.
@@ -36,17 +38,16 @@ public class ClassBox {
 		width = 130;
 		height = 130;
 
-		updateDeleteArea();
 		updateDragArea();
 		updateResizeArea();
+		updateDeleteArea();
 		updateBoxes(startX, startY, width, height);
 		updateTextAreas(startX, startY, width, height);
-		makeDeletable();
 		makeResizable();
 		makeDraggable();
-		showAura();
-		// resizeInternals();
+		makeDeletable();
 
+		rTop.setStyle("-fx-background-color: #D3D3D3;");
 	}
 
 	/**
@@ -61,29 +62,26 @@ public class ClassBox {
 	 * @param height
 	 *            Height of this ClassBox.
 	 */
-	public ClassBox(double startX, double startY, double width, double height, String Top, String Mid, String Bot) {
+	public ClassBox(double startX, double startY, double width, double height) {
 
 		this.startX = startX;
 		this.startY = startY;
 		this.width = width;
 		this.height = height;
 
-		// this.dragArea = new Rectangle(startX, startY, width, height);
-		// dragArea.setStrokeWidth(2);
-		// dragArea.setStroke(Color.RED);
-		// dragArea.setFill(Color.TRANSPARENT);
-		updateDeleteArea();
-		updateDragArea();
-		updateBoxes(this.startX, this.startY, this.width, height);
-		updateTextAreas(this.startX, this.startY, this.width, height);
-		tTop.setText(Top);
-		tMid.setText(Mid);
-		tBot.setText(Bot);
-		makeDeletable();
+		dragArea = new Rectangle(startX, startY, width, height);
+		dragArea.setStrokeWidth(2);
+		dragArea.setFill(Color.TRANSPARENT);
 
+		updateBoxes(this.startX, this.startY, this.width, this.height);
+		updateTextAreas(this.startX, this.startY, this.width, this.height);
+
+		updateDragArea();
 		updateResizeArea();
+		updateDeleteArea();
 		makeResizable();
 		makeDraggable();
+		makeDeletable();
 	}
 
 	// Method to update Rectangles within ClassBox.
@@ -111,25 +109,24 @@ public class ClassBox {
 		this.width = width;
 		this.height = height;
 
-		if (this.width < -1) {
-			this.width = -this.width;
-			this.startX = this.startX - this.width;
+		if (width < -1) {
+			this.width = -width;
+			this.startX = startX - width;
 		}
-		if (this.height < -1) {
-			this.height = -this.height;
-			this.startY = this.startY - this.height;
+		if (height < -1) {
+			this.height = -height;
+			this.startY = startY - height;
 		}
 
 		// Set Min height + width
-		if (this.height < 130) {
+		if (height < 120) {
 			this.height = 130;
 		}
-		if (this.width < 130) {
+		if (width < 130) {
 			this.width = 130;
 		}
 		// Each section of box is a third.
 		double ythird = this.height / 3.0;
-
 
 		if (rTop == null) {
 			rTop = new Rectangle(this.startX, this.startY, this.width, ythird);
@@ -140,7 +137,7 @@ public class ClassBox {
 		rTop.setX(this.startX);
 		rTop.setY(this.startY);
 		rTop.setWidth(this.width);
-		rTop.setHeight(40);
+		rTop.setHeight(ythird);
 
 		if (rMid == null) {
 			rMid = new Rectangle(this.startX, this.startY + ythird, this.width, ythird);
@@ -149,9 +146,9 @@ public class ClassBox {
 			rMid.setStrokeWidth(2);
 		}
 		rMid.setX(this.startX);
-		rMid.setY(this.startY + 40);
+		rMid.setY(this.startY + ythird);
 		rMid.setWidth(this.width);
-		rMid.setHeight((this.height - 40) / 2);
+		rMid.setHeight(ythird);
 
 		if (rBot == null) {
 			rBot = new Rectangle(this.startX, this.startY + 2 * ythird, this.width, ythird);
@@ -160,9 +157,9 @@ public class ClassBox {
 			rBot.setStrokeWidth(2);
 		}
 		rBot.setX(this.startX);
-		rBot.setY(rMid.getY() + rMid.getHeight());
+		rBot.setY(this.startY + 2 * ythird);
 		rBot.setWidth(this.width);
-		rBot.setHeight(rMid.getHeight());
+		rBot.setHeight(ythird);
 	}
 
 	// Method to update TextAreas within ClassBox.
@@ -195,35 +192,36 @@ public class ClassBox {
 		}
 
 		// Set Min height + width
-		if (height < 130) {
+		if (height < 120) {
 			height = 130;
 		}
 		if (width < 130) {
 			width = 130;
 		}
+		// Each section of box is a third.
+		double ythird = height / 3.0;
 		if (tTop == null) {
 			tTop = new TextArea();
 		}
-		
 		tTop.setLayoutX(startX + 1);
 		tTop.setLayoutY(startY + 1);
-		tTop.setPrefHeight(40 - 2);
+		tTop.setPrefHeight(ythird - 2);
 		tTop.setPrefWidth(width - 2);
 
 		if (tMid == null) {
 			tMid = new TextArea();
 		}
 		tMid.setLayoutX(startX + 1);
-		tMid.setLayoutY(rMid.getY() + 1);
-		tMid.setPrefHeight(rMid.getHeight() - 2);
+		tMid.setLayoutY(startY + ythird + 1);
+		tMid.setPrefHeight(ythird - 2);
 		tMid.setPrefWidth(width - 2);
 
 		if (tBot == null) {
 			tBot = new TextArea();
 		}
 		tBot.setLayoutX(startX + 1);
-		tBot.setLayoutY(rBot.getY() + 1);
-		tBot.setPrefHeight(rBot.getHeight() - 2);
+		tBot.setLayoutY(startY + 2 * ythird + 1);
+		tBot.setPrefHeight(ythird - 2);
 		tBot.setPrefWidth(width - 2);
 	}
 
@@ -258,36 +256,6 @@ public class ClassBox {
 	 */
 	public double getStartY() {
 		return startY;
-	}
-
-	/**
-	 * Returns height of this ClassBox.
-	 * 
-	 * @return height This ClassBox's height.
-	 */
-	public double getHeight() {
-		return height;
-	}
-
-	/**
-	 * Returns width of this ClassBox.
-	 * 
-	 * @return width This ClassBox's height.
-	 */
-	public double getWidth() {
-		return width;
-	}
-
-	public TextArea getTTop() {
-		return this.tTop;
-	}
-
-	public TextArea getTMid() {
-		return this.tMid;
-	}
-
-	public TextArea getTBot() {
-		return this.tBot;
 	}
 
 	// Helper function for makeDraggable
@@ -347,7 +315,6 @@ public class ClassBox {
 	// Creates mouse listener for dragArea (Red outline around ClassBox)
 	private void makeDraggable() {
 		this.dragArea.setOnMouseDragged(eventDragged -> {
-			//Sets colors for boxes
 			dragArea.setStroke(Color.RED);
 			resizeArea.setFill(Color.GREEN);
 			deleteArea.setFill(Color.RED);
@@ -374,12 +341,6 @@ public class ClassBox {
 			updateDeleteArea();
 			eventDragged.consume();
 		});
-
-		resizeArea.setOnMouseEntered(eventEntered -> {
-			resizeArea.setFill(Color.GREEN);
-			dragArea.setStroke(Color.RED);
-			deleteArea.setFill(Color.RED);
-		});
 	}
 
 	// Creates mouse listener for deleteArea (Red square at top left corner of drag
@@ -390,16 +351,9 @@ public class ClassBox {
 			deleteArea.setVisible(false);
 			event.consume();
 		});
-
-		deleteArea.setOnMouseDragged(eventDone -> {
-			resizeArea.setFill(Color.TRANSPARENT);
-			deleteArea.setFill(Color.TRANSPARENT);
-			dragArea.setStroke(Color.TRANSPARENT);
-		});
 	}
 
 	// Updates resizeArea to match ClassBox location.
-	// Creates new if Class Box is being made.
 	private void updateResizeArea() {
 		if (resizeArea == null) {
 			resizeArea = new Rectangle(startX + width, startY + height, 7.5, 7.5);
@@ -408,27 +362,26 @@ public class ClassBox {
 		} else {
 			resizeArea.setFill(Color.GREEN);
 		}
+		
 		resizeArea.setX(startX + width);
 		resizeArea.setY(startY + height);
 	}
 
 	// Updates deleteArea to match ClassBox location.
-	// Creates new if Class Box is being made.
 	private void updateDeleteArea() {
-		if (this.deleteArea == null) {
-			this.deleteArea = new Rectangle(startX - 7, startY - 7, 7.5, 7.5);
-			this.deleteArea.setFill(Color.TRANSPARENT);
-			this.deleteArea.setOpacity(50);
+		if (deleteArea == null) {
+			deleteArea = new Rectangle(startX - 7, startY - 7, 7.5, 7.5);
+			deleteArea.setFill(Color.TRANSPARENT);
+			deleteArea.setOpacity(50);
 		} else {
 			deleteArea.setFill(Color.RED);
 		}
-
+		
 		deleteArea.setX(startX - 7);
 		deleteArea.setY(startY - 7);
 	}
 
 	// Updates dragArea to match ClassBox location.
-	// Creates new if Class Box is being made.
 	private void updateDragArea() {
 		if (dragArea == null) {
 			dragArea = new Rectangle(startX - 7.5, startY - 7.5, width + 15, height + 15);
@@ -445,8 +398,8 @@ public class ClassBox {
 	}
 
 	// Bounds checking for X parameter for dragging and Resizing.
-	// Logic differentiates between dragging and resizing, since
-	// dragging snaps to top left, but only resize from bottom right.
+	// Logic differentiates between dragging and resizing, since you can drag from
+	// anywhere, but only resize from bottom right.
 	private double checkBoundsX(double x, Rectangle r) {
 		if (x < UML.drawingBox.getBoundsInParent().getMinX() + 7.5) { // left side of gray area
 			x = UML.drawingBox.getBoundsInParent().getMinX() + 7.5;
@@ -465,8 +418,8 @@ public class ClassBox {
 	}
 
 	// Bounds checking for Y parameter for dragging and Resizing.
-	// Logic differentiates between dragging and resizing, since dragging
-	// snaps to top left, but only resize from bottom right.
+	// Logic differentiates between dragging and resizing, since you can drag from
+	// anywhere, but only resize from bottom right.
 	private double checkBoundsY(double y, Rectangle r) {
 		if (y < UML.drawingBox.getBoundsInParent().getMinY() + 7.5) { // top of gray area
 			y = UML.drawingBox.getBoundsInParent().getMinY() + 7.5;
@@ -489,57 +442,49 @@ public class ClassBox {
 	// Setting .isVisible(false) doesn't allow setOnMouseEntered to activate, I
 	// think the object isn't there anymore.
 	private void dragToggle() {
-		// Fixed weird bug where if you released while moving fast, aura would persist
-		dragArea.setOnMouseDragReleased(eventDone -> {
-			resizeArea.setFill(Color.TRANSPARENT);
-			deleteArea.setFill(Color.TRANSPARENT);
-			dragArea.setStroke(Color.TRANSPARENT);
-		});
-		// Fixed weird bug where if you released while moving fast, aura would persist
-		//^^ not sure if both are necessary
-		dragArea.setOnMouseReleased(eventDone -> {
-			resizeArea.setFill(Color.TRANSPARENT);
-			deleteArea.setFill(Color.TRANSPARENT);
-			dragArea.setStroke(Color.TRANSPARENT);
-		});
-		// Visually hides (not to system) when not "active"
 		dragArea.setOnMouseExited(eventExited -> {
 			resizeArea.setFill(Color.TRANSPARENT);
 			deleteArea.setFill(Color.TRANSPARENT);
 			dragArea.setStroke(Color.TRANSPARENT);
+
+			// Moving from dragArea to resizeArea to keep everything visible
+			resizeArea.setOnMouseEntered(eventEntered -> {
+				resizeArea.setFill(Color.GREEN);
+				deleteArea.setFill(Color.RED);
+				dragArea.setStroke(Color.RED);
+			});
+			
+			// Moving from dragArea to resizeArea to keep both visible
+			deleteArea.setOnMouseEntered(eventEntered -> {
+				resizeArea.setFill(Color.GREEN);
+				deleteArea.setFill(Color.RED);
+				dragArea.setStroke(Color.RED);
+			});
 		});
 
-		// Moving from dragArea to resizeArea to keep everything visible
 		dragArea.setOnMouseEntered(eventEntered -> {
 			resizeArea.setFill(Color.GREEN);
-			deleteArea.setFill(Color.RED);
 			dragArea.setStroke(Color.RED);
-		});
-
-		// Moving from dragArea to resizeArea to keep both visible
-		deleteArea.setOnMouseEntered(eventEntered -> {
-			resizeArea.setFill(Color.GREEN);
 			deleteArea.setFill(Color.RED);
-			dragArea.setStroke(Color.RED);
 		});
-
 	}
 
-	//Returns String representing ClassBox w/ fields delimited by / 
-	//~~~~ = Object delimiter for save file
-	public String whereAmI() {
-		String tText = "PLACEHOLDER", mText = "PLACEHOLDER", bText = "PLACEHOLDER";
-		if (!tTop.getText().equals("")) {
-			tText = tTop.getText();
-		}
-		if (!tMid.getText().equals("")) {
-			mText = tMid.getText();
-		}
-		if (!tBot.getText().equals("")) {
-			bText = tBot.getText();
-		}
-		return ("CLASSBOX/" + startX + "/" + startY + "/" + width + "/" + height + "/" + tText + "/" + mText + "/"
-				+ bText + "~~~~");
+	/**
+	 * Returns height of this ClassBox.
+	 * 
+	 * @return height This ClassBox's height.
+	 */
+	public double getHeight() {
+		return height;
+	}
+
+	/**
+	 * Returns width of this ClassBox.
+	 * 
+	 * @return width This ClassBox's height.
+	 */
+	public double getWidth() {
+		return width;
 	}
 
 	/**
@@ -549,28 +494,12 @@ public class ClassBox {
 	 *            TextArea to get text from.
 	 * @return String Text value of Textbox.
 	 */
-	public String getText(TextArea t) {
+	public static String getText(TextArea t) {
 		return t.getText();
 	}
 
-	// Effectively deletes class box by removing all components
 	private void removeClassBox() {
 		Group group = UML.getGroup();
 		group.getChildren().removeAll(dragArea, resizeArea, rTop, rMid, rBot, tTop, tMid, tBot);
 	}
-
-	// Hides Aura (+ to system) for when drawing a line
-	public void hideAura() {
-		this.dragArea.setVisible(false);
-		this.resizeArea.setVisible(false);
-		this.deleteArea.setVisible(false);
-	}
-
-	// Shows Aura (+ to system) for after done drawing a line
-	public void showAura() {
-		this.dragArea.setVisible(true);
-		this.resizeArea.setVisible(true);
-		this.deleteArea.setVisible(true);
-	}
-
 }
