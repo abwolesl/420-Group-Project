@@ -1,8 +1,9 @@
 
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.Group;
 
 public class TextBox {
 
@@ -148,8 +149,8 @@ public class TextBox {
 	 * @param g
 	 *            The Group in which this ClassBox is placed.
 	 */
-	public void drawMe(Group g) {
-		g.getChildren().addAll(dragArea, resizeArea, deleteArea, textBox);
+	public void drawMe(Pane pane) {
+		pane.getChildren().addAll(dragArea, resizeArea, deleteArea, textBox);
 		UML.setUserClicked(false);
 	}
 
@@ -334,8 +335,15 @@ public class TextBox {
 				y = UML.drawingBox.getBoundsInParent().getMaxY() - 7.5;
 			}
 		} else {
-			if (y + this.height > UML.drawingBox.getBoundsInParent().getMaxY() - 7.5) { // right side of gray area
+			if (y + this.height > UML.drawingBox.getBoundsInParent().getMaxY() - 7.5) { // bottom of gray area
 				y = UML.drawingBox.getBoundsInParent().getMaxY() - 7.5 - this.height;
+				// Because user is trying to draw at bottom, should allow the drawing scene to grow
+				Stage UMLStage = UML.getStage();
+				UMLStage.setResizable(true);
+				// limit how far user can go down (can be changed)
+				if (UMLStage.getHeight() + 100 < 900) {
+					UMLStage.setHeight(UMLStage.getHeight() + 100);
+				}
 			}
 		}
 
@@ -397,7 +405,7 @@ public class TextBox {
 	}
 
 	public void removeClassBox() {
-		Group group = UML.getGroup();
-		group.getChildren().removeAll(dragArea, resizeArea, textBox);
+		Pane pane = UML.getPane();
+		pane.getChildren().removeAll(dragArea, resizeArea, textBox);
 	}
 }

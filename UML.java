@@ -1,14 +1,19 @@
 /**
  * @author SWETR
- * @Version 3. something -- This has the grid
+ * @Version 3
  * @since April 2018
  */
 
+import java.io.BufferedReader;
 import java.io.File;
-
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -74,9 +79,14 @@ public class UML extends Application {
 	
 	GridPane grid;
 	
-	private static Group group;
+	public static Pane pane;
 	
 	public static Stage UMLStage;
+	
+	static ArrayList<ClassBox> cBoxArray = new ArrayList<ClassBox>();
+	ArrayList<Relationship> relArray = new ArrayList<Relationship>();
+	
+	public static boolean hideClassBox;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -87,7 +97,7 @@ public class UML extends Application {
 	 */
 	@Override
 	public void start(Stage UnusedStage) {
-		group = new Group();
+		Group group = new Group();
 		UMLStage = new Stage();
 		UMLStage.setTitle("SWETR UML Diagram Application");
 		// image courtesy of google
@@ -112,7 +122,7 @@ public class UML extends Application {
 	//group contains all of the JavaFX elements such as Buttons and shapes. 
 	private void createUMLOptions(Stage UMLStage, Scene UMLScene, Group group) {
 		
-		Pane pane = new Pane();
+		pane = new Pane();
 		
 		drawingBox = new VBox();
 		// hexadecimal for light gray
@@ -129,9 +139,8 @@ public class UML extends Application {
 		grid = createGrid();
 		grid.setGridLinesVisible(true);
 		grid.setStyle("-fx-background-color: #D3D3D3;");
-		grid.setPrefWidth(drawingBox.getWidth());
-		grid.setPrefHeight(drawingBox.getHeight());
 		grid.setOpacity(.5);
+		updateGrid();
 		
 		// creates vertical box to make formatting easier
 		VBox optionsVBox = new VBox(10);
@@ -152,10 +161,10 @@ public class UML extends Application {
 		buttonsHBox.setTranslateY(screenHeight*.001);
 		buttonsHBox.setTranslateX(drawingBox.getTranslateX());
 
-		createUMLButtons(optionsVBox, UMLScene, group);
+		createUMLButtons(optionsVBox, pane, group);
 		createTopButtons(buttonsHBox, UMLStage);
 		createInfoPane(infoVBox, UMLScene, group);
-		
+	
 		pane.getChildren().addAll(buttonsHBox, optionsVBox, drawingBox, infoVBox);
 		
 		 ScrollPane s1 = new ScrollPane();
@@ -171,6 +180,11 @@ public class UML extends Application {
 		 s1.setVbarPolicy(ScrollBarPolicy.ALWAYS);
 		 
 		 group.getChildren().add(s1);
+	}
+	
+	private void updateGrid () {
+		grid.setPrefWidth(drawingBox.getWidth());
+		grid.setPrefHeight(screenHeight + 100);
 	}
 	
 	private void createInfoPane(VBox infoVBox, Scene UMLScene, Group group) {
@@ -214,7 +228,7 @@ public class UML extends Application {
 	//optionsVBox is the container in which all of the buttons are stored.
 	//UMLScene is the container for the Group.
 	//group contains all of the JavaFX elements such as Buttons and shapes. 
-	private void createUMLButtons(VBox optionsVBox, Scene UMLScene, Group group) {
+	private void createUMLButtons(VBox optionsVBox, Pane pane, Group group) {
 		
 		Button aggregation = new Button("Aggregation");
 		Button composition = new Button("Composition");
@@ -237,7 +251,7 @@ public class UML extends Application {
 			b.setOnAction((event) -> {
 				setUserClicked(true);
 				String option = b.getText();
-				Relationship newRelationship = new Relationship(UMLScene, group, option);
+				Relationship newRelationship = new Relationship(pane, option);
 			});
 		}
 
@@ -251,7 +265,7 @@ public class UML extends Application {
 
 		// Handle event
 		classBox.setOnAction((event) -> {
-			new ClassBox().drawMe(group);
+			new ClassBox().drawMe(pane);
 		});
 		
 		// add text or note
@@ -261,7 +275,7 @@ public class UML extends Application {
 		// Handle event
 		addText.setOnAction((event) -> {
 			setUserClicked(true);
-			new TextBox().drawMe(group);
+			new TextBox().drawMe(pane);
 		});
 		
 		Button clearAll = new Button("Clear All");
@@ -335,7 +349,28 @@ public class UML extends Application {
 
 			@Override
 			public void handle(ActionEvent event) {
+				FileChooser fileChooser = new FileChooser();
 
+				// Set extension filter
+				FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+				fileChooser.getExtensionFilters().add(extFilter);
+
+				// Show save file dialog
+				File file = fileChooser.showSaveDialog(UMLStage);
+
+				if (file != null) {
+					String addToFile = "";
+
+					for (int i = 0; i < cBoxArray.size(); i++) {
+						addToFile += cBoxArray.get(i).whereAmI();
+					}
+
+					for (int i = 0; i < relArray.size(); i++) {
+						addToFile += relArray.get(i).whereAmI();
+					}
+
+					SaveFile(addToFile, file);
+				}
 			}
 		});
 
@@ -344,7 +379,33 @@ public class UML extends Application {
 
 			@Override
 			public void handle(ActionEvent event) {
+				FileChooser fileChooser = new FileChooser();
+				fileChooser.setTitle("Open Text");
 
+				// Set extension filter
+				FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+				fileChooser.getExtensionFilters().add(extFilter);
+
+				// Show save file dialog
+				File file = fileChooser.showOpenDialog(UMLStage);
+				if (file != null) {
+					try {
+
+						Stage UMLStage = new Stage();
+						UMLStage.setTitle("New UML Diagram");
+						Group group = new Group();
+						Scene UMLScene = new Scene(group, 1400, 700);
+						UMLScene.getStylesheets().add("stylesheet.css");
+						UMLStage.setScene(UMLScene);
+						UMLStage.show();
+
+						createUMLOptions(UMLStage, UMLScene, group);
+						
+						readFile(file,pane);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		});
 
@@ -522,11 +583,11 @@ public class UML extends Application {
 
 			@Override
 			public void handle(ActionEvent event) {
-				group.getChildren().removeIf(n -> n instanceof Rectangle);
-				group.getChildren().removeIf(n -> n instanceof TextArea);
-				group.getChildren().removeIf(n -> n instanceof Line);
-				group.getChildren().removeIf(n -> n instanceof Polygon);
-				group.getChildren().removeIf(n -> n instanceof Polyline);
+				pane.getChildren().removeIf(n -> n instanceof Rectangle);
+				pane.getChildren().removeIf(n -> n instanceof TextArea);
+				pane.getChildren().removeIf(n -> n instanceof Line);
+				pane.getChildren().removeIf(n -> n instanceof Polygon);
+				pane.getChildren().removeIf(n -> n instanceof Polyline);
 				exitWarningStage.close();
 			}
 		});
@@ -601,11 +662,79 @@ public class UML extends Application {
 		return userClicked;
 	}
 	
-	public static Group getGroup() {
-		return group;
+	public static Pane getPane() {
+		return pane;
 	}
 	
 	public static Stage getStage () {
 		return UMLStage;
 	}
+	
+	//Opens save dialog and ???
+		private void SaveFile(String content, File file) {
+			try {
+				FileWriter fileWriter = null;
+
+				fileWriter = new FileWriter(file);
+				fileWriter.write(content);
+				fileWriter.close();
+			} catch (IOException ex) {
+				Logger.getLogger(UML.class.getName()).log(Level.SEVERE, null, ex);
+			}
+
+		}
+
+		//Reads in save file and breaks into objects
+		private static void readFile(File file, Pane pane) throws IOException {
+			FileReader in = new FileReader(file);
+			BufferedReader br = new BufferedReader(in);
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split("~~~~");
+				for (int i = 0; i < parts.length; i++) {
+					readString(parts[i], pane);
+				}
+			}
+			br.close();
+		}
+
+		//Takes object string and parses details
+		//Creates object 
+		private static void readString(String action, Pane pane) {
+
+			String[] parts = action.split("/");
+
+			
+
+			 if (parts[0].equals("Relationship")) {
+
+				String relType = parts[1];
+				double startX = Double.parseDouble(parts[2]);
+				double startY = Double.parseDouble(parts[3]);
+				double endX = Double.parseDouble(parts[4]);
+				double endY = Double.parseDouble(parts[5]);
+
+				new Relationship(pane, relType, startX, startY, endX, endY);
+
+			}
+			 else if (parts[0].equals("CLASSBOX")) {
+
+				double startX = Double.parseDouble(parts[1]);
+				double startY = Double.parseDouble(parts[2]);
+				double width = Double.parseDouble(parts[3]);
+				double height = Double.parseDouble(parts[4]);
+				String tTop = "", tMid = "", tBot = "";
+				if (!parts[5].equals("PLACEHOLDER")) {
+					tTop = parts[5];
+				}
+				if (!parts[6].equals("PLACEHOLDER")) {
+					tMid = parts[6];
+				}
+				if (!parts[7].equals("PLACEHOLDER")) {
+					tBot = parts[7];
+				}
+				ClassBox cBox = new ClassBox(startX, startY, width, height, tTop, tMid, tBot);
+				cBox.drawMe(pane);
+			 }
+		}
 }
