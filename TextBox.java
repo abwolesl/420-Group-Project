@@ -30,8 +30,8 @@ public class TextBox {
 
 		startX = 300;
 		startY = 300;
-		width = 50;
-		height = 50;
+		width = 100;
+		height = 100;
 
 		updateDragArea();
 		updateResizeArea();
@@ -116,11 +116,11 @@ public class TextBox {
 		// This could be changed later.
 		
 		// Set min height and width
-		if (height < 50) {
-			this.height = 50;
+		if (height < 100) {
+			this.height = 100;
 		}
-		if (width < 50) {
-			this.width = 50;
+		if (width < 100) {
+			this.width = 100;
 		}
 		
 		// Set max height and width
@@ -197,8 +197,8 @@ public class TextBox {
 			width = -width;
 			startX = startX - width;
 		}
-		if (width < 50) {
-			width = 50;
+		if (width < 100) {
+			width = 100;
 		}
 
 		updateBox(startX, startY, width, height);
@@ -216,8 +216,8 @@ public class TextBox {
 			height = -height;
 			startY = startY - height;
 		}
-		if (height < 50) {
-			height = 50;
+		if (height < 100) {
+			height = 100;
 		}
 
 		updateBox(startX, startY, width, height);
@@ -260,6 +260,12 @@ public class TextBox {
 			removeClassBox();
 			deleteArea.setVisible(false);
 			event.consume();
+		});
+		
+		this.deleteArea.setOnMouseEntered(event -> {
+			deleteArea.setFill(Color.RED);
+			dragArea.setStroke(Color.RED);
+			resizeArea.setFill(Color.GREEN);
 		});
 	}
 
@@ -365,6 +371,7 @@ public class TextBox {
 			dragArea.setStroke(Color.RED);
 			deleteArea.setFill(Color.RED);
 		});
+		
 	}
 
 	/**

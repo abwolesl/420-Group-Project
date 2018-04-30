@@ -3,9 +3,8 @@
    -fx-text-fill: white; 
 }
 
-
-.outline.label .text {
-    -fx-fill: lightseagreen;
-    -fx-stroke: firebrick;
-    -fx-stroke-width: 2px;
+.tTop {
+   -fx-font-size: 8pt;
+   -fx-alignment: center;
+   -fx-font-weight: bold;
 }

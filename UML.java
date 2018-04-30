@@ -1,30 +1,51 @@
 
 /**
  * @author SWETR
- * @Version 2.2
+ * @Version 3. something -- This has the grid
  * @since April 2018
  */
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javafx.application.Application;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Polyline;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.scene.control.TextArea;
-import javafx.scene.image.Image;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 
 public class UML extends Application {
 
@@ -61,8 +82,6 @@ public class UML extends Application {
 	 */
 	public static VBox drawingBox;
 
-	public static VBox infoVBox;
-
 	/**
 	 * userClicked describes whether or not an object has been selected to be drawn.
 	 * Resets to false after every drawn object.
@@ -82,7 +101,19 @@ public class UML extends Application {
 
 	TextArea newTextField = null;
 
+	GridPane grid;
+	
+	public static VBox infoVBox;
+
 	static Group group;
+
+	// scroll pane
+	ScrollPane sp = new ScrollPane();
+
+	static ArrayList<ClassBox> cBoxArray = new ArrayList<ClassBox>();
+	ArrayList<Relationship> relArray = new ArrayList<Relationship>();
+	
+	public static boolean hideClassBox;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -120,57 +151,75 @@ public class UML extends Application {
 	// UMLScene is the container for the Group.
 	// group contains all of the JavaFX elements such as Buttons and shapes.
 	private void createUMLOptions(Stage UMLStage, Scene UMLScene, Group group) {
-		// creates vertical box to make formatting easier
-		// maybe look up if there is an align left function. Would be more
-		// understandable
-		VBox optionsVBox = new VBox(10);
-		optionsVBox.setTranslateY(UMLStage.getHeight() * .05); // shift vbox down slightly
-		optionsVBox.setTranslateX(UMLStage.getWidth() * .005); // shift vbox over to the left so under top row of
-																// buttons
-		optionsVBox.setMaxSize(30, 100);
+		drawingBox = new VBox();
+		// hexadecimal for light gray
+		drawingBox.setStyle("-fx-background-color: #D3D3D3;");
+		drawingBox.prefWidthProperty().bind(UMLStage.widthProperty().multiply(0.915));
+		drawingBox.prefHeightProperty().bind(UMLStage.heightProperty().multiply(0.923));
+
+		drawingBox.setTranslateY(screenHeight * .04);
+		drawingBox.setTranslateX(screenWidth * .08);
+		drawingBox.autosize();
+
+		grid = createGrid();
+		grid.setGridLinesVisible(true);
+		grid.setStyle("-fx-background-color: #D3D3D3;");
+		grid.setPrefWidth(drawingBox.getWidth());
+		grid.setPrefHeight(drawingBox.getHeight());
+		grid.setOpacity(.5);
 
 		infoVBox = new VBox(10);
 		infoVBox.setTranslateY(UMLStage.getHeight() * .5); // shift vbox down slightly
 		infoVBox.setTranslateX(UMLStage.getWidth() * .005); // shift vbox over to the left so under top row of buttons
+		
+		// creates vertical box to make formatting easier
+		VBox optionsVBox = new VBox(10);
+		// maybe look up if there is an align left function. Would be more
+		// understandable
+		optionsVBox.setTranslateY(drawingBox.getTranslateY()); // shift vbox down slightly
+		optionsVBox.setTranslateX(UMLStage.getWidth() * .0005); // shift vbox over to the left so under top row of
+																// buttons
 		optionsVBox.setMaxSize(30, 100);
+		optionsVBox.setPadding(new Insets(0));
 
 		HBox buttonsHBox = new HBox(10);
-		buttonsHBox.setPadding(new Insets(10)); // sets padding between nodes (so buttons)
+		// buttonsHBox.setPadding(new Insets(10)); // sets padding between nodes (so
+		// buttons)
 		buttonsHBox.setTranslateY(screenHeight * .001);
-		buttonsHBox.setTranslateX(screenWidth * .10);
+		buttonsHBox.setTranslateX(drawingBox.getTranslateX());
 
 		createUMLButtons(optionsVBox, UMLScene, group);
 		createTopButtons(buttonsHBox, UMLStage);
 		createInfoPane(infoVBox, UMLScene, group);
 
-		drawingBox = new VBox();
-		// hexadecimal for light gray
-		drawingBox.setStyle("-fx-background-color: #D3D3D3;");
-		drawingBox.prefWidthProperty().bind(UMLStage.widthProperty().multiply(0.88));
-		drawingBox.prefHeightProperty().bind(UMLStage.heightProperty().multiply(0.85));
-
-		drawingBox.setTranslateY(screenHeight * .10);
-		drawingBox.setTranslateX(screenWidth * .10);
-		drawingBox.autosize();
-
 		// buttonsHBox.getChildren().addAll(drawingBox);
-		group.getChildren().addAll(buttonsHBox, optionsVBox, infoVBox, drawingBox);
+		group.getChildren().addAll(buttonsHBox, optionsVBox,infoVBox, drawingBox);
 	}
-
+	
 	private void createInfoPane(VBox infoVBox, Scene UMLScene, Group group) {
 
 		// maybe should generalize this more
 		infoVBox.setMinWidth(110);
-
+		infoVBox.setPrefWidth(110);
+		infoVBox.setPadding(new Insets(0));
+		infoVBox.setMaxSize(30, 100);
 		Label startXLabel = new Label("Start X");
 		Label startYLabel = new Label("Start Y");
 		Label endXLabel = new Label("End X");
 		Label endYLabel = new Label("End Y");
 
 		TextField startX = new TextField();
+		startX.setMaxWidth(110);
+		startX.setEditable(false);
 		TextField startY = new TextField();
+		startY.setEditable(false);
+		startY.setMaxWidth(110);
 		TextField endX = new TextField();
+		endX.setEditable(false);
+		endX.setMaxWidth(110);
 		TextField endY = new TextField();
+		endY.setEditable(false);
+		endY.setMaxWidth(110);
 
 		//I think we would need an ID for each instance of an object for these to work -Grant
 		//Button delete = new Button("Delete");
@@ -180,21 +229,21 @@ public class UML extends Application {
 
 		infoVBox.getChildren().addAll(startXLabel, startX, startYLabel, startY, endXLabel, endX, endYLabel, endY);
 	}
-
+	
 	//Sets each textfield of the info pane to coords of a line passed in from Relationship.java
-	public static void setInfoPane(double lineStartX, double lineStartY, double lineEndX, double lineEndY) {
-		TextField lsxNode = (TextField) infoVBox.getChildren().get(1);
-		lsxNode.setText(Double.toString(lineStartX));
-		
-		TextField lsyNode = (TextField) infoVBox.getChildren().get(3);
-		lsyNode.setText(Double.toString(lineStartY));
-		
-		TextField lexNode = (TextField) infoVBox.getChildren().get(5);
-		lexNode.setText(Double.toString(lineEndX));
-		
-		TextField leyNode = (TextField) infoVBox.getChildren().get(7);
-		leyNode.setText(Double.toString(lineEndY));
-	}
+		public static void setInfoPane(double lineStartX, double lineStartY, double lineEndX, double lineEndY) {
+			TextField lsxNode = (TextField) infoVBox.getChildren().get(1);
+			lsxNode.setText(Double.toString(lineStartX));
+			
+			TextField lsyNode = (TextField) infoVBox.getChildren().get(3);
+			lsyNode.setText(Double.toString(lineStartY));
+			
+			TextField lexNode = (TextField) infoVBox.getChildren().get(5);
+			lexNode.setText(Double.toString(lineEndX));
+			
+			TextField leyNode = (TextField) infoVBox.getChildren().get(7);
+			leyNode.setText(Double.toString(lineEndY));
+		}
 
 	// Creates the left-hand side buttons that encompass the options that users have
 	// to pick from to create.
@@ -207,38 +256,49 @@ public class UML extends Application {
 		Button composition = new Button("Composition");
 		Button generalization = new Button("Generalization");
 		Button dependency = new Button("Dependency");
-		Button blank = new Button("Blank");
 
-		Button[] buttons = new Button[5];
+		aggregation.setPrefWidth(110);
+		composition.setPrefWidth(110);
+		generalization.setPrefWidth(110);
+		dependency.setPrefWidth(110);
+
+		Button[] buttons = new Button[4];
 		buttons[0] = aggregation;
 		buttons[1] = composition;
 		buttons[2] = generalization;
 		buttons[3] = dependency;
-		buttons[4] = blank;
 
 		// draw the line depending on the button press
 		for (Button b : buttons) {
 			b.setOnAction((event) -> {
 				setUserClicked(true);
+				for (ClassBox cb : cBoxArray) {
+					cb.hideAura();
+				}
 				String option = b.getText();
 				Relationship newRelationship = new Relationship(UMLScene, group, option);
+				relArray.add(newRelationship);
 			});
 		}
 
 		// class box
 		Button classBox = new Button();
 		classBox.setText("Class Box");
+		classBox.setPrefWidth(110);
 
 		// maybe should generalize this more
 		optionsVBox.setMinWidth(110);
 
 		// Handle event
 		classBox.setOnAction((event) -> {
-			new ClassBox().drawMe(group);
+			ClassBox cb = new ClassBox();
+			cb.drawMe(group);
+			cBoxArray.add(cb);
 		});
 
 		// add text or note
 		Button addText = new Button("Add Text");
+		addText.setPrefWidth(110);
 
 		// Handle event
 		addText.setOnAction((event) -> {
@@ -246,8 +306,40 @@ public class UML extends Application {
 			new TextBox().drawMe(group);
 		});
 
-		optionsVBox.getChildren().addAll(classBox, aggregation, composition, generalization, dependency, blank,
-				addText);
+		Button clearAll = new Button("Clear All");
+		clearAll.setPrefWidth(110);
+
+		// Handle event
+		clearAll.setOnAction((event) -> {
+			setUserClicked(true);
+			createClearWarning();
+		});
+
+		Button showGridButton = new Button("Show Grid");
+		showGridButton.setPrefWidth(110);
+
+		Button removeGridButton = new Button("Remove Grid");
+		removeGridButton.setPrefWidth(110);
+
+		// Handle event
+		showGridButton.setOnAction((event) -> {
+			//setUserClicked(true);
+			// show grid
+			drawingBox.getChildren().add(grid);
+			optionsVBox.getChildren().remove(showGridButton);
+			optionsVBox.getChildren().add(removeGridButton);
+		});
+
+		removeGridButton.setOnAction((event) -> {
+			//setUserClicked(true);
+			// remove grid
+			drawingBox.getChildren().remove(grid);
+			optionsVBox.getChildren().remove(removeGridButton);
+			optionsVBox.getChildren().add(showGridButton);
+		});
+
+		optionsVBox.getChildren().addAll(classBox, aggregation, composition, generalization, dependency, addText,
+				clearAll, showGridButton);
 	}
 
 	// Creates new, save, exit, help buttons.
@@ -262,7 +354,7 @@ public class UML extends Application {
 		saveButton.setText("Save");
 
 		Button openExistingUMLButton = new Button();
-		openExistingUMLButton.setText("Open Existing UML Diagram");
+		openExistingUMLButton.setText("Open");
 
 		Button exitButton = new Button();
 		exitButton.setText("Exit");
@@ -282,22 +374,68 @@ public class UML extends Application {
 		});
 
 		// Save Button
-		saveButton.setOnAction(new EventHandler<ActionEvent>() {
+				saveButton.setOnAction(new EventHandler<ActionEvent>() {
 
-			@Override
-			public void handle(ActionEvent event) {
-				// implement how to save diagram
-			}
-		});
+					@Override
+					public void handle(ActionEvent event) {
+						FileChooser fileChooser = new FileChooser();
 
-		// Open Existing UML Button opens diagram saved on user's computer
-		openExistingUMLButton.setOnAction(new EventHandler<ActionEvent>() {
+						// Set extension filter
+						FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+						fileChooser.getExtensionFilters().add(extFilter);
 
-			@Override
-			public void handle(ActionEvent event) {
-				// implement how to open existing diagram
-			}
-		});
+						// Show save file dialog
+						File file = fileChooser.showSaveDialog(UMLStage);
+
+						if (file != null) {
+							String addToFile = "";
+
+							for (int i = 0; i < cBoxArray.size(); i++) {
+								addToFile += cBoxArray.get(i).whereAmI();
+							}
+
+							for (int i = 0; i < relArray.size(); i++) {
+								addToFile += relArray.get(i).whereAmI();
+							}
+
+							SaveFile(addToFile, file);
+						}
+					}
+				});
+
+				// Open Existing UML Button opens diagram saved on user's computer
+				openExistingUMLButton.setOnAction(new EventHandler<ActionEvent>() {
+
+					@Override
+					public void handle(ActionEvent event) {
+						FileChooser fileChooser = new FileChooser();
+						fileChooser.setTitle("Open Text");
+
+						// Set extension filter
+						FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+						fileChooser.getExtensionFilters().add(extFilter);
+
+						// Show save file dialog
+						File file = fileChooser.showOpenDialog(UMLStage);
+						if (file != null) {
+							try {
+
+								Stage UMLStage = new Stage();
+								UMLStage.setTitle("New UML Diagram");
+								Group group = new Group();
+								Scene UMLScene = new Scene(group, 1400, 700);
+								UMLStage.setScene(UMLScene); // dimensions can be changed
+								UMLStage.show();
+
+								createUMLOptions(UMLStage, UMLScene, group);
+
+								readFile(file,group);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				});
 
 		// Exit Button
 		exitButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -399,8 +537,8 @@ public class UML extends Application {
 		HBox buttonHBox = new HBox();
 		buttonHBox.setSpacing(20);
 		// shifts hbox to bottom of message screen
-		buttonHBox.setTranslateX(70);
-		buttonHBox.setTranslateY(260);
+		buttonHBox.setAlignment(Pos.BOTTOM_CENTER);
+		buttonHBox.setPadding(new Insets(5));
 
 		Button cancelButton = new Button();
 		cancelButton.setText("Cancel");
@@ -435,6 +573,110 @@ public class UML extends Application {
 		// maybe add save button to message
 	}
 
+	private void createClearWarning() {
+		Stage exitWarningStage = new Stage();
+		exitWarningStage.setTitle("Clear All Warning!");
+		exitWarningStage.getIcons().add(new Image("swetr_icon.png"));
+		StackPane exitRoot = new StackPane();
+
+		exitWarningStage.setScene(new Scene(exitRoot, 400, 300)); // dimensions can be changed
+		exitWarningStage.show();
+
+		Text warningMessage = new Text();
+		// should eventually change this styling with CSS
+		warningMessage.setText(
+				"\t \t \t WARNING! \n \n You are about to clear the UML diagram! \n Are you sure you want to clear all?");
+
+		HBox buttonHBox = new HBox();
+		buttonHBox.setSpacing(20);
+		// shifts hbox to bottom of message screen
+		buttonHBox.setAlignment(Pos.BOTTOM_CENTER);
+		buttonHBox.setPadding(new Insets(5));
+
+		Button cancelButton = new Button();
+		cancelButton.setText("Cancel");
+
+		Button yesButton = new Button();
+		yesButton.setText("Yes");
+
+		// close exit warning screen, not application
+		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				exitWarningStage.close();
+			}
+		});
+
+		// close exit warning screen AND application
+		yesButton.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				group.getChildren().removeIf(n -> n instanceof Rectangle);
+				group.getChildren().removeIf(n -> n instanceof TextArea);
+				group.getChildren().removeIf(n -> n instanceof Line);
+				group.getChildren().removeIf(n -> n instanceof Polygon);
+				group.getChildren().removeIf(n -> n instanceof Polyline);
+				exitWarningStage.close();
+			}
+		});
+
+		// add buttons to hbox
+		buttonHBox.getChildren().addAll(cancelButton, yesButton);
+		// add hbox and message to the warning screen
+		exitRoot.getChildren().addAll(warningMessage, buttonHBox);
+	}
+
+	/**
+	 * @return
+	 */
+	private StackPane createCell(BooleanProperty cellSwitch) {
+
+		StackPane cell = new StackPane();
+		return cell;
+	}
+
+	/**
+	 * @return Citation: Code to create grid was modified from a stack overflow post
+	 *         URL:
+	 *         https://stackoverflow.com/questions/37619867/how-to-make-gridpanes-lines-visible
+	 */
+	private GridPane createGrid() {
+
+		int numCols = 40;
+		int numRows = 30;
+
+		BooleanProperty[][] switches = new BooleanProperty[numCols][numRows];
+		for (int x = 0; x < numCols; x++) {
+			for (int y = 0; y < numRows; y++) {
+				switches[x][y] = new SimpleBooleanProperty();
+			}
+		}
+
+		GridPane grid = new GridPane();
+
+		for (int x = 0; x < numCols; x++) {
+			ColumnConstraints cc = new ColumnConstraints();
+			cc.setHgrow(Priority.ALWAYS);
+			grid.getColumnConstraints().add(cc);
+		}
+
+		for (int y = 0; y < numRows; y++) {
+			RowConstraints rc = new RowConstraints();
+			rc.setVgrow(Priority.ALWAYS);
+			grid.getRowConstraints().add(rc);
+		}
+
+		for (int x = 0; x < numCols; x++) {
+			for (int y = 0; y < numRows; y++) {
+				grid.add(createCell(switches[x][y]), x, y);
+			}
+		}
+
+		return grid;
+	}
+
 	/**
 	 * Sets the value, {@link userClicked} to passed in boolean value.
 	 * 
@@ -456,5 +698,73 @@ public class UML extends Application {
 
 	public static Group getGroup() {
 		return group;
+	}
+
+	//Opens save dialog and ???
+	private void SaveFile(String content, File file) {
+		try {
+			FileWriter fileWriter = null;
+
+			fileWriter = new FileWriter(file);
+			fileWriter.write(content);
+			fileWriter.close();
+		} catch (IOException ex) {
+			Logger.getLogger(UML.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+	}
+
+	//Reads in save file and breaks into objects
+	private static void readFile(File file, Group group) throws IOException {
+		FileReader in = new FileReader(file);
+		BufferedReader br = new BufferedReader(in);
+		String line;
+		while ((line = br.readLine()) != null) {
+			String[] parts = line.split("~~~~");
+			for (int i = 0; i < parts.length; i++) {
+				readString(parts[i], group);
+			}
+		}
+		br.close();
+	}
+
+	//Takes object string and parses details
+	//Creates object 
+	private static void readString(String action, Group group) {
+
+		String[] parts = action.split("/");
+
+		
+
+		 if (parts[0].equals("Relationship")) {
+
+			String relType = parts[1];
+			double startX = Double.parseDouble(parts[2]);
+			double startY = Double.parseDouble(parts[3]);
+			double endX = Double.parseDouble(parts[4]);
+			double endY = Double.parseDouble(parts[5]);
+
+			new Relationship(group, relType, startX, startY, endX, endY);
+
+		}
+		 else if (parts[0].equals("CLASSBOX")) {
+
+			double startX = Double.parseDouble(parts[1]);
+			double startY = Double.parseDouble(parts[2]);
+			double width = Double.parseDouble(parts[3]);
+			double height = Double.parseDouble(parts[4]);
+			String tTop = "", tMid = "", tBot = "";
+			if (!parts[5].equals("PLACEHOLDER")) {
+				tTop = parts[5];
+			}
+			if (!parts[6].equals("PLACEHOLDER")) {
+				tMid = parts[6];
+			}
+			if (!parts[7].equals("PLACEHOLDER")) {
+				tBot = parts[7];
+			}
+			ClassBox cBox = new ClassBox(startX, startY, width, height, tTop, tMid, tBot);
+			cBox.drawMe(group);
+		 }
 	}
 }
