@@ -341,9 +341,9 @@ public class TextBox {
 				Stage UMLStage = UML.getStage();
 				UMLStage.setResizable(true);
 				// limit how far user can go down (can be changed)
-				if (UMLStage.getHeight() + 100 < 900) {
+				//if (UMLStage.getHeight() + 100 < 900) {
 					UMLStage.setHeight(UMLStage.getHeight() + 100);
-				}
+				//}
 			}
 		}
 
