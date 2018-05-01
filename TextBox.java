@@ -1,8 +1,9 @@
 
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.Group;
 
 public class TextBox {
 
@@ -30,8 +31,8 @@ public class TextBox {
 
 		startX = 300;
 		startY = 300;
-		width = 100;
-		height = 100;
+		width = 50;
+		height = 50;
 
 		updateDragArea();
 		updateResizeArea();
@@ -55,8 +56,6 @@ public class TextBox {
 	 *            Height of this ClassBox.
 	 */
 	public TextBox(double startX, double startY, double width, double height) {
-		
-		System.out.println("second ctor is used");
 
 		this.startX = startX;
 		this.startY = startY;
@@ -116,11 +115,11 @@ public class TextBox {
 		// This could be changed later.
 		
 		// Set min height and width
-		if (height < 100) {
-			this.height = 100;
+		if (height < 50) {
+			this.height = 50;
 		}
-		if (width < 100) {
-			this.width = 100;
+		if (width < 50) {
+			this.width = 50;
 		}
 		
 		// Set max height and width
@@ -138,6 +137,7 @@ public class TextBox {
 		textBox.setTranslateY(this.startY);
 		textBox.setMaxWidth(this.width);
 		textBox.setMaxHeight(this.height);
+		textBox.setFont(Font.font ("Verdana", 12)); 
 	}
 
 	// Draws the ClassBox inside the group.
@@ -148,8 +148,8 @@ public class TextBox {
 	 * @param g
 	 *            The Group in which this ClassBox is placed.
 	 */
-	public void drawMe(Group g) {
-		g.getChildren().addAll(dragArea, resizeArea, deleteArea, textBox);
+	public void drawMe(Pane pane) {
+		pane.getChildren().addAll(dragArea, resizeArea, deleteArea, textBox);
 		UML.setUserClicked(false);
 	}
 
@@ -197,8 +197,8 @@ public class TextBox {
 			width = -width;
 			startX = startX - width;
 		}
-		if (width < 100) {
-			width = 100;
+		if (width < 50) {
+			width = 50;
 		}
 
 		updateBox(startX, startY, width, height);
@@ -216,8 +216,8 @@ public class TextBox {
 			height = -height;
 			startY = startY - height;
 		}
-		if (height < 100) {
-			height = 100;
+		if (height < 50) {
+			height = 50;
 		}
 
 		updateBox(startX, startY, width, height);
@@ -260,12 +260,6 @@ public class TextBox {
 			removeClassBox();
 			deleteArea.setVisible(false);
 			event.consume();
-		});
-		
-		this.deleteArea.setOnMouseEntered(event -> {
-			deleteArea.setFill(Color.RED);
-			dragArea.setStroke(Color.RED);
-			resizeArea.setFill(Color.GREEN);
 		});
 	}
 
@@ -340,8 +334,14 @@ public class TextBox {
 				y = UML.drawingBox.getBoundsInParent().getMaxY() - 7.5;
 			}
 		} else {
-			if (y + this.height > UML.drawingBox.getBoundsInParent().getMaxY() - 7.5) { // right side of gray area
+			if (y + this.height > UML.drawingBox.getBoundsInParent().getMaxY() - 7.5) { // bottom of gray area
 				y = UML.drawingBox.getBoundsInParent().getMaxY() - 7.5 - this.height;
+				/*
+				// Because user is trying to draw at bottom, should allow the drawing scene to grow
+				Stage UMLStage = UML.getStage();
+				UMLStage.setResizable(true);
+				UMLStage.setHeight(UMLStage.getHeight() + 100);
+				*/
 			}
 		}
 
@@ -371,7 +371,6 @@ public class TextBox {
 			dragArea.setStroke(Color.RED);
 			deleteArea.setFill(Color.RED);
 		});
-		
 	}
 
 	/**
@@ -404,7 +403,7 @@ public class TextBox {
 	}
 
 	public void removeClassBox() {
-		Group group = UML.getGroup();
-		group.getChildren().removeAll(dragArea, resizeArea, textBox);
+		Pane pane = UML.getPane();
+		pane.getChildren().removeAll(dragArea, resizeArea, textBox);
 	}
 }

@@ -1,8 +1,10 @@
 
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.Group;
 
 public class ClassBox {
 
@@ -209,6 +211,13 @@ public class ClassBox {
 		tTop.setLayoutY(startY + 1);
 		tTop.setPrefHeight(40 - 2);
 		tTop.setPrefWidth(width - 2);
+		// Only certain fonts can be bold -- Verdana is one of them
+		tTop.setFont(Font.font ("Verdana", 12)); 
+		// This breaks if it is moved to the css file
+		// because css does not support this, 
+		// but JavaFX does
+		tTop.setStyle("-fx-font-weight: bold;");
+		tTop.setId("top");
 
 		if (tMid == null) {
 			tMid = new TextArea();
@@ -217,6 +226,7 @@ public class ClassBox {
 		tMid.setLayoutY(rMid.getY() + 1);
 		tMid.setPrefHeight(rMid.getHeight() - 2);
 		tMid.setPrefWidth(width - 2);
+		tMid.setFont(Font.font ("Verdana", 12)); 
 
 		if (tBot == null) {
 			tBot = new TextArea();
@@ -225,6 +235,7 @@ public class ClassBox {
 		tBot.setLayoutY(rBot.getY() + 1);
 		tBot.setPrefHeight(rBot.getHeight() - 2);
 		tBot.setPrefWidth(width - 2);
+		tBot.setFont(Font.font ("Verdana", 12)); 
 	}
 
 	// Draws the ClassBox inside the group.
@@ -235,8 +246,8 @@ public class ClassBox {
 	 * @param g
 	 *            The Group in which this ClassBox is placed.
 	 */
-	public void drawMe(Group g) {
-		g.getChildren().addAll(dragArea, resizeArea, deleteArea, rTop, rMid, rBot, tTop, tMid, tBot);
+	public void drawMe(Pane pane) {
+		pane.getChildren().addAll(dragArea, resizeArea, deleteArea, rTop, rMid, rBot, tTop, tMid, tBot);
 		UML.setUserClicked(false);
 	}
 
@@ -477,8 +488,15 @@ public class ClassBox {
 				y = UML.drawingBox.getBoundsInParent().getMaxY() - 7.5;
 			}
 		} else {
-			if (y + this.height > UML.drawingBox.getBoundsInParent().getMaxY() - 7.5) { // right side of gray area
+			if (y + this.height > UML.drawingBox.getBoundsInParent().getMaxY() - 7.5) { // bottom of gray area
 				y = UML.drawingBox.getBoundsInParent().getMaxY() - 7.5 - this.height;
+
+				/*
+				// Because user is trying to draw at bottom, should allow the drawing scene to grow
+				Stage UMLStage = UML.getStage();
+				UMLStage.setResizable(true);
+				UMLStage.setHeight(UMLStage.getHeight() + 100);
+				*/
 			}
 		}
 
@@ -555,8 +573,8 @@ public class ClassBox {
 
 	// Effectively deletes class box by removing all components
 	private void removeClassBox() {
-		Group group = UML.getGroup();
-		group.getChildren().removeAll(dragArea, resizeArea, rTop, rMid, rBot, tTop, tMid, tBot);
+		Pane pane = UML.getPane();
+		pane.getChildren().removeAll(dragArea, resizeArea, rTop, rMid, rBot, tTop, tMid, tBot);
 	}
 
 	// Hides Aura (+ to system) for when drawing a line

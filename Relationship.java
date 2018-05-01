@@ -1,13 +1,13 @@
 
-import javafx.scene.Group;
 import javafx.scene.shape.Circle;
-import javafx.scene.Scene;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
 
 public class Relationship {
 
@@ -51,19 +51,19 @@ public class Relationship {
 	 * @param relationshipType
 	 *            Type of this relationship.
 	 */
-	public Relationship(Scene UMLScene, Group group, String relationshipType) {
+	public Relationship(Pane pane, String relationshipType) {
 
 		relType = relationshipType;
-		drawLine(UMLScene, group, relationshipType);
+		drawLine(pane, relationshipType);
 
 	}
 
 	// draws guideline from user click until user releases mouse. Then draws this
 	// Relationship's type.
-	private void drawLine(Scene UMLScene, Group group, String option) {
+	private void drawLine(Pane pane, String option) {
 
 		// mouse pressed, user is about to draw a new line
-		UMLScene.setOnMousePressed((MouseEvent event) -> {
+		pane.setOnMousePressed((MouseEvent event) -> {
 			if (UML.getUserClicked()) {
 				if (isLineBeingDrawn == false) {
 					UML.hideClassBox = true;
@@ -80,7 +80,7 @@ public class Relationship {
 
 						newLine.setFill(Color.BLACK);
 
-						group.getChildren().add(newLine);
+						pane.getChildren().add(newLine);
 
 						isLineBeingDrawn = true;
 					}
@@ -90,7 +90,7 @@ public class Relationship {
 		});
 
 		// while user is dragging line, dimensions change
-		UMLScene.setOnMouseDragged((MouseEvent event) -> {
+		pane.setOnMouseDragged((MouseEvent event) -> {
 			if (UML.getUserClicked()) {
 				if (isLineBeingDrawn == true) {
 					double buffer = 7.5;
@@ -126,7 +126,7 @@ public class Relationship {
 		});
 
 		// user finished drawing line, reset variables
-		UMLScene.setOnMouseReleased((MouseEvent event) -> {
+		pane.setOnMouseReleased((MouseEvent event) -> {
 			if (UML.getUserClicked()) {
 				if (isLineBeingDrawn == true) {
 
@@ -135,26 +135,26 @@ public class Relationship {
 					// this.dragLine.setStroke(Color.CYAN);
 					// this.dragLine.setStrokeWidth(10);
 					makeNewCircle(startingPointX, startingPointY, currentEndingPointX, currentEndingPointY);
-					group.getChildren().add(pivot);
+					pane.getChildren().add(pivot);
 
 					switch (option) {
 					case "Aggregation":
-						drawAggregationOrComposition(group, startingPointX, startingPointY, currentEndingPointX,
+						drawAggregationOrComposition(pane, startingPointX, startingPointY, currentEndingPointX,
 								currentEndingPointY, "White");
 						newLine.setVisible(false);
 						break;
 					case "Composition":
-						drawAggregationOrComposition(group, startingPointX, startingPointY, currentEndingPointX,
+						drawAggregationOrComposition(pane, startingPointX, startingPointY, currentEndingPointX,
 								currentEndingPointY, "Black");
 						newLine.setVisible(false);
 						break;
 					case "Generalization":
-						drawGeneralization(group, startingPointX, startingPointY, currentEndingPointX,
+						drawGeneralization(pane, startingPointX, startingPointY, currentEndingPointX,
 								currentEndingPointY);
 						newLine.setVisible(false);
 						break;
 					case "Dependency":
-						drawDependency(group, startingPointX, startingPointY, currentEndingPointX, currentEndingPointY);
+						drawDependency(pane, startingPointX, startingPointY, currentEndingPointX, currentEndingPointY);
 						newLine.setVisible(false);
 						break;
 					}
@@ -175,26 +175,26 @@ public class Relationship {
 
 	}
 
-	public Relationship(Group group, String relationshipType, double startX, double startY, double endX, double endY) {
+	public Relationship(Pane pane, String relationshipType, double startX, double startY, double endX, double endY) {
 
 		makeNewCircle(startX, startY, endX, endY);
 		makeRotatable();
-		group.getChildren().add(pivot);
+		pane.getChildren().add(pivot);
 		this.relType = relationshipType;
 
 		switch (relationshipType) {
 		case "Aggregation":
-			drawAggregationOrComposition(group, startX, startY, endX, endY, "White");
+			drawAggregationOrComposition(pane, startX, startY, endX, endY, "White");
 			break;
 		case "Composition":
-			drawAggregationOrComposition(group, startX, startY, endX, endY, "Black");
+			drawAggregationOrComposition(pane, startX, startY, endX, endY, "Black");
 			break;
 		case "Generalization":
-			drawGeneralization(group, startX, startY, endX, endY);
+			drawGeneralization(pane, startX, startY, endX, endY);
 
 			break;
 		case "Dependency":
-			drawDependency(group, startX, startY, endX, endY);
+			drawDependency(pane, startX, startY, endX, endY);
 
 			break;
 		}
@@ -229,7 +229,7 @@ public class Relationship {
 	 * @param color
 	 *            Determines aggregation(black) or composition(white)
 	 */
-	void drawAggregationOrComposition(Group group, double startX, double startY, double endX, double endY,
+	void drawAggregationOrComposition(Pane pane, double startX, double startY, double endX, double endY,
 			String color) {
 
 		startXValue = startX;
@@ -283,7 +283,7 @@ public class Relationship {
 		});
 
 		makeDraggable();
-		group.getChildren().addAll(line, rHead);
+		pane.getChildren().addAll(line, rHead);
 
 		line.setOnMouseEntered(event -> {
 			line.setStroke(Color.INDIANRED);
@@ -309,7 +309,7 @@ public class Relationship {
 	 * @param startY
 	 *            End point Y value to draw this Relationship.
 	 */
-	void drawGeneralization(Group group, double startX, double startY, double endX, double endY) {
+	void drawGeneralization(Pane pane, double startX, double startY, double endX, double endY) {
 
 		startXValue = startX;
 		startYValue = startY;
@@ -386,7 +386,7 @@ public class Relationship {
 		});
 
 		makeDraggable();
-		group.getChildren().addAll(line, pHead);
+		pane.getChildren().addAll(line, pHead);
 
 		line.setOnMouseEntered(event -> {
 			line.setStroke(Color.INDIANRED);
@@ -412,7 +412,7 @@ public class Relationship {
 	 * @param startY
 	 *            End point Y value to draw this Relationship.
 	 */
-	void drawDependency(Group group, double startX, double startY, double endX, double endY) {
+	void drawDependency(Pane pane, double startX, double startY, double endX, double endY) {
 
 		startXValue = startX;
 		startYValue = startY;
@@ -487,7 +487,7 @@ public class Relationship {
 		});
 
 		makeDraggable();
-		group.getChildren().addAll(line, plHead);
+		pane.getChildren().addAll(line, plHead);
 
 		line.setOnMouseEntered(event -> {
 			line.setStroke(Color.INDIANRED);
@@ -656,7 +656,7 @@ public class Relationship {
 			if (y + (endYValue - startYValue) > UML.drawingBox.getBoundsInParent().getMaxY() - buffer) { // Bottom
 				y = UML.drawingBox.getBoundsInParent().getMaxY() - (endYValue - startYValue) - buffer;
 			} else {
-				if (y < UML.drawingBox.getBoundsInParent().getMinY() + buffer) { // left side
+				if (y < UML.drawingBox.getBoundsInParent().getMinY() + buffer) { // top
 					y = UML.drawingBox.getBoundsInParent().getMinY() + buffer;
 				}
 			}
@@ -664,8 +664,14 @@ public class Relationship {
 			if (y + (endYValue - startYValue) <= UML.drawingBox.getBoundsInParent().getMinY() + buffer) { // Top
 				y = UML.drawingBox.getBoundsInParent().getMinY() + (startYValue - endYValue) + buffer;
 			} else {
-				if (y > UML.drawingBox.getBoundsInParent().getMaxY() - buffer) { // right side
+				if (y > UML.drawingBox.getBoundsInParent().getMaxY() - buffer) { // bottom
 					y = UML.drawingBox.getBoundsInParent().getMaxY() - buffer;
+					/*
+					// Because user is trying to draw at bottom, should allow the drawing scene to grow
+					Stage UMLStage = UML.getStage();
+					UMLStage.setResizable(true);
+					UMLStage.setHeight(UMLStage.getHeight() + 100);
+					*/
 				}
 			}
 		}
