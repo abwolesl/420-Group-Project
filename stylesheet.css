@@ -1,0 +1,14 @@
+.button { 
+   -fx-background-color: gray; 
+   -fx-text-fill: white; 
+}
+
+.label { 
+   -fx-background-color: gray; 
+   -fx-text-fill: white; 
+}
+
+#top *.text {
+    
+    -fx-text-alignment: center;
+}
